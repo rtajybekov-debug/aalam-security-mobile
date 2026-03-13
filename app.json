@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Alarm SOS",
+    "slug": "alarm-sos-mobile",
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "sos-emergency",
+          "enableBackgroundRemoteNotifications": true
+        }
+      ]
+    ],
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We use your location to share live emergency coordinates with responders.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We use your location during an active SOS session to help responders track your position."
+      }
+    },
+    "android": {
+      "package": "com.alarmsos.mobile",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "extra": {
+      "apiBaseUrl": "http://localhost:3000",
+      "socketUrl": "http://localhost:3000"
+    },
+    "newArchEnabled": true
+  }
+}
