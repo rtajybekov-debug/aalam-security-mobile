@@ -7,7 +7,8 @@ import { NetworkOfflineScreen } from "../../screens/system/NetworkOfflineScreen"
 import { TermsScreen } from "../../screens/common/TermsScreen";
 import { PrivacyScreen } from "../../screens/common/PrivacyScreen";
 import { MyOrganizationsScreen } from "../../screens/common/MyOrganizationsScreen";
-import { CreateOrganizationScreen } from "../../screens/common/CreateOrganizationScreen";
+import { RequestNewOrganizationScreen } from "../../screens/common/CreateOrganizationScreen";
+import { OrganizationRequestSubmittedScreen } from "../../screens/common/OrganizationRequestSubmittedScreen";
 import { OrganizationVenuesScreen } from "../../screens/common/OrganizationVenuesScreen";
 import { CreateVenueScreen } from "../../screens/common/CreateVenueScreen";
 import { appStackScreenOptions } from "../ui/AppStackShell";
@@ -31,9 +32,14 @@ export const CommonStack = () => (
       options={{ title: "My Organizations" }}
     />
     <Stack.Screen
-      name="CreateOrganization"
-      component={CreateOrganizationScreen}
-      options={{ title: "Create Organization" }}
+      name="RequestNewOrganization"
+      component={RequestNewOrganizationScreen}
+      options={{ title: "Request New Organization" }}
+    />
+    <Stack.Screen
+      name="OrganizationRequestSubmitted"
+      component={OrganizationRequestSubmittedScreen}
+      options={{ title: "Request Submitted" }}
     />
     <Stack.Screen
       name="OrganizationVenues"

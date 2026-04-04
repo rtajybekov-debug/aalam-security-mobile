@@ -2,6 +2,7 @@ import React from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -67,67 +68,64 @@ export const ResetPasswordScreen = ({ route, navigation }: Props) => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: tokens.colors.surface,
-              borderColor: tokens.colors.border,
-            },
-          ]}
-        >
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Set new password</Text>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Change password</Text>
           <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
             Enter your new password below.
           </Text>
-
-          <View style={styles.form}>
-            <Controller
-              control={control}
-              name="newPassword"
-              render={({ field: { onChange, value } }) => (
-                <AppInput
-                  label="New password"
-                  secureTextEntry
-                  placeholder="••••••••"
-                  value={value}
-                  onChangeText={onChange}
-                  error={errors.newPassword?.message}
-                  autoComplete="new-password"
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="confirmPassword"
-              render={({ field: { onChange, value } }) => (
-                <AppInput
-                  label="Confirm password"
-                  secureTextEntry
-                  placeholder="••••••••"
-                  value={value}
-                  onChangeText={onChange}
-                  error={errors.confirmPassword?.message}
-                  autoComplete="new-password"
-                />
-              )}
-            />
-            <ActionButton
-              label={isSubmitting ? "Resetting..." : "Reset password"}
-              disabled={isSubmitting}
-              loading={isSubmitting}
-              onPress={handleSubmit(onSubmit)}
-              size="large"
-            />
-          </View>
         </View>
 
-        <ActionButton
-          variant="ghost"
-          label="Back to login"
+        <View style={styles.form}>
+          <Controller
+            control={control}
+            name="newPassword"
+            render={({ field: { onChange, value } }) => (
+              <AppInput
+                label="New password"
+                secureTextEntry
+                returnKeyType="next"
+                value={value}
+                onChangeText={onChange}
+                error={errors.newPassword?.message}
+                autoComplete="new-password"
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="confirmPassword"
+            render={({ field: { onChange, value } }) => (
+              <AppInput
+                label="Confirm password"
+                secureTextEntry
+                returnKeyType="done"
+                value={value}
+                onChangeText={onChange}
+                error={errors.confirmPassword?.message}
+                autoComplete="new-password"
+                onSubmitEditing={handleSubmit(onSubmit)}
+              />
+            )}
+          />
+
+          <ActionButton
+            label={isSubmitting ? "Resetting..." : "Reset password"}
+            disabled={isSubmitting}
+            loading={isSubmitting}
+            onPress={handleSubmit(onSubmit)}
+            size="large"
+          />
+        </View>
+
+        <Pressable
           onPress={() => navigation.navigate("Login")}
-          style={styles.back}
-        />
+          style={styles.backWrap}
+          accessibilityRole="link"
+        >
+          <Text style={[styles.backText, { color: tokens.colors.onSurfaceMuted }]}>
+            Back to Login
+          </Text>
+        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -137,17 +135,32 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: {
     flexGrow: 1,
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingTop: 80,
+    paddingBottom: 40,
+  },
+  header: {
+    marginBottom: 28,
+  },
+  title: {
+    fontSize: 34,
+    fontWeight: "800",
+    letterSpacing: -0.8,
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  form: {
     gap: 16,
-    marginTop: 80,
   },
-  card: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 24,
+  backWrap: {
+    alignItems: "center",
+    paddingVertical: 20,
   },
-  title: { fontSize: 22, fontWeight: "800", marginBottom: 8 },
-  subtitle: { fontSize: 14, lineHeight: 20, marginBottom: 24 },
-  form: { gap: 14 },
-  back: { alignSelf: "center", marginTop: 8 },
+  backText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
 });

@@ -3,8 +3,8 @@ import { PaginatedResponse } from "../../types/common";
 import { EmergencyLocation, EmergencySession } from "../../types/emergency";
 
 export const emergencyApi = {
-  async start() {
-    const { data } = await apiClient.post<EmergencySession>("/emergency/start");
+  async start(options?: { venueId?: string }) {
+    const { data } = await apiClient.post<EmergencySession>("/emergency/start", options ?? {});
     return data;
   },
   async sendLocation(sessionId: string, location: EmergencyLocation) {

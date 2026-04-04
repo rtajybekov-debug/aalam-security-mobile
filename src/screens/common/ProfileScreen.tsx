@@ -1,5 +1,5 @@
 import React from "react";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { useAuthStore } from "../../stores/authStore";
 import { AppCard } from "../../components/ui/AppCard";
 import { ActionButton } from "../../components/ui/ActionButton";
@@ -42,6 +42,14 @@ export const ProfileScreen = () => {
               </Text>
             </View>
           </View>
+          {user?.role === "USER" ? (
+            <Pressable
+              style={[styles.editAction, { borderColor: tokens.colors.border, backgroundColor: tokens.colors.surface }]}
+              onPress={() => navigation.navigate("User", { screen: "UserEditDetails" })}
+            >
+              <Text style={[styles.editText, { color: tokens.colors.primary }]}>Edit</Text>
+            </Pressable>
+          ) : null}
         </View>
 
         {/* Info card */}
@@ -136,6 +144,13 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   roleText: { fontSize: 12, fontWeight: "600" },
+  editAction: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  editText: { fontSize: 13, fontWeight: "600" },
   sectionLabel: {
     fontSize: 11,
     fontWeight: "600",

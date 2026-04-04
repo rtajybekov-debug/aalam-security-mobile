@@ -10,7 +10,10 @@ import {
   View,
 } from "react-native";
 import Animated, {
+  cancelAnimation,
   Easing,
+  interpolate,
+  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -26,23 +29,44 @@ export type SosButtonState = "idle" | "sending" | "active" | "disabled";
 interface Props {
   state: SosButtonState;
   onTrigger: () => Promise<void> | void;
+  /** Pencil Home / Dashboard: 152px SOS, orange→red gradient, no info block below */
+  dashboardStyle?: boolean;
 }
 
 const HOLD_MS = 1500;
 
-export const SosEmergencyButton = ({ state, onTrigger }: Props) => {
+const BUTTON_SIZE = 210;
+const PULSE_SIZE = 250;
+const GLOW_SIZE = 240;
+
+/** Matches Pencil node 240pX / NiPGo — inner 152, ring 196 */
+const DASHBOARD_BUTTON = 152;
+const DASHBOARD_PULSE = 196;
+const DASHBOARD_GLOW = 184;
+const DASHBOARD_GRADIENT: [ColorValue, ColorValue] = ["#FF8852", "#EF4444"];
+
+export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) => {
   const theme = useAppTheme();
   const scale = useSharedValue(1);
   const pulseScale = useSharedValue(1);
   const pulseOpacity = useSharedValue(0.55);
   const glowOpacity = useSharedValue(0.15);
+  const holdProgress = useSharedValue(0);
   const [isConfirmVisible, setIsConfirmVisible] = React.useState(false);
   const [reduceMotion, setReduceMotion] = React.useState(false);
+  const hapticIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
   React.useEffect(() => {
     AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion).catch(() => setReduceMotion(false));
     const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduceMotion);
     return () => sub.remove();
+  }, []);
+
+  React.useEffect(() => () => {
+    if (hapticIntervalRef.current) {
+      clearInterval(hapticIntervalRef.current);
+      hapticIntervalRef.current = null;
+    }
   }, []);
 
   React.useEffect(() => {
@@ -64,27 +88,44 @@ export const SosEmergencyButton = ({ state, onTrigger }: Props) => {
         : withTiming(0.15, { duration: 350 });
   }, [glowOpacity, pulseOpacity, pulseScale, reduceMotion, state]);
 
+  const holdBoost = useSharedValue(0);
+  useAnimatedReaction(
+    () => holdProgress.value,
+    (progress) => {
+      holdBoost.value = interpolate(progress, [0, 1], [0, 0.4]);
+    },
+  );
+
   const animatedScale = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
   const animatedPulse = useAnimatedStyle(() => ({
     transform: [{ scale: pulseScale.value }],
-    opacity: pulseOpacity.value,
+    opacity: Math.min(1, pulseOpacity.value + holdBoost.value),
   }));
   const animatedGlow = useAnimatedStyle(() => ({
-    opacity: glowOpacity.value,
+    opacity: Math.min(1, glowOpacity.value + holdBoost.value),
   }));
 
   const disabled = state === "disabled" || state === "sending";
   const isActive = state === "active";
   const isSending = state === "sending";
-  const gradientColors: [ColorValue, ColorValue] = isActive
-    ? [theme.tokens.colors.warning, theme.tokens.status.IN_PROGRESS.border]
-    : [theme.tokens.colors.danger, theme.tokens.status.NEW.border];
+  const gradientColors: [ColorValue, ColorValue] = (() => {
+    if (dashboardStyle && !isActive) return DASHBOARD_GRADIENT;
+    if (isActive) return [theme.tokens.colors.warning, theme.tokens.status.IN_PROGRESS.border];
+    const dg = theme.tokens.colors.dangerGradient;
+    if (dg) return dg as [ColorValue, ColorValue];
+    return [theme.tokens.colors.danger, theme.tokens.status.NEW.border];
+  })();
   const contextTitle = isActive ? "SOS already active" : isSending ? "Sending alert..." : "Emergency SOS";
   const contextDescription = isActive
     ? "Help is being notified. Open active session for updates."
     : "Hold the button for 1.5s to send an emergency alert.";
+
+  const btnSize = dashboardStyle ? DASHBOARD_BUTTON : BUTTON_SIZE;
+  const pulseSize = dashboardStyle ? DASHBOARD_PULSE : PULSE_SIZE;
+  const glowSize = dashboardStyle ? DASHBOARD_GLOW : GLOW_SIZE;
+  const labelOnGradient = dashboardStyle ? "#FFFFFF" : theme.tokens.colors.onDanger;
 
   const fireTrigger = async () => {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -97,28 +138,55 @@ export const SosEmergencyButton = ({ state, onTrigger }: Props) => {
     }
   };
 
-  const onPressIn = async () => {
+  const clearHoldState = React.useCallback(() => {
+    if (hapticIntervalRef.current) {
+      clearInterval(hapticIntervalRef.current);
+      hapticIntervalRef.current = null;
+    }
+    cancelAnimation(holdProgress);
+    holdProgress.value = 0;
+  }, []);
+
+  const onPressIn = () => {
+    if (disabled) return;
     if (!reduceMotion) {
       scale.value = withSpring(0.97, { damping: 14, stiffness: 260 });
+      holdProgress.value = withTiming(1, { duration: HOLD_MS, easing: Easing.linear });
     }
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (state === "idle") {
+      let step = 0;
+      hapticIntervalRef.current = setInterval(() => {
+        step += 1;
+        if (step === 1) void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        else if (step >= 2) void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      }, 400);
+    }
   };
 
   const onPressOut = () => {
+    clearHoldState();
     if (!reduceMotion) {
       scale.value = withSpring(1, { damping: 14, stiffness: 260 });
     }
   };
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, dashboardStyle && styles.wrapperDashboard]}>
       {!reduceMotion && (state === "idle" || state === "sending" || state === "active") && (
         <Animated.View
           style={[
             styles.pulse,
-            state === "active"
-              ? { borderColor: theme.tokens.colors.warning }
-              : { borderColor: theme.tokens.colors.danger },
+            { width: pulseSize, height: pulseSize, borderRadius: pulseSize / 2 },
+            dashboardStyle
+              ? {
+                  borderColor: "#27272A",
+                  backgroundColor: "#18181B",
+                  borderWidth: 1,
+                }
+              : state === "active"
+                ? { borderColor: theme.tokens.colors.warning }
+                : { borderColor: theme.tokens.colors.danger },
             animatedPulse,
           ]}
         />
@@ -128,6 +196,7 @@ export const SosEmergencyButton = ({ state, onTrigger }: Props) => {
         <Animated.View
           style={[
             styles.glow,
+            { width: glowSize, height: glowSize, borderRadius: glowSize / 2 },
             { backgroundColor: isActive ? theme.tokens.colors.warning : theme.tokens.colors.danger },
             animatedGlow,
           ]}
@@ -135,6 +204,7 @@ export const SosEmergencyButton = ({ state, onTrigger }: Props) => {
         <Pressable
           style={[
             styles.button,
+            { width: btnSize, height: btnSize, borderRadius: btnSize / 2 },
             disabled && styles.disabled,
           ]}
           disabled={disabled}
@@ -156,26 +226,32 @@ export const SosEmergencyButton = ({ state, onTrigger }: Props) => {
         >
           <LinearGradient
             colors={gradientColors}
-            style={styles.gradient}
+            style={[styles.gradient, { borderRadius: btnSize / 2 }]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
           >
             {isSending ? (
-              <ActivityIndicator color={theme.tokens.colors.onDanger} />
+              <ActivityIndicator color={labelOnGradient} />
             ) : (
-              <Text style={[styles.label, { color: theme.tokens.colors.onDanger }]}>
+              <Text style={[styles.label, dashboardStyle && styles.labelDashboard, { color: labelOnGradient }]}>
                 {state === "active" ? "SOS ACTIVE" : "SOS"}
               </Text>
             )}
-            <Text style={[styles.helper, { color: theme.tokens.colors.onDanger }]}>
-              {isActive ? "Tap to open session" : "Hold 1.5s to trigger"}
-            </Text>
+            {!dashboardStyle ? (
+              <Text style={[styles.helper, { color: theme.tokens.colors.onDanger }]}>
+                {isActive ? "Tap to open session" : "Hold 1.5s to trigger"}
+              </Text>
+            ) : null}
           </LinearGradient>
         </Pressable>
       </Animated.View>
 
-      <View style={styles.infoBlock}>
-        <Text style={[styles.infoTitle, { color: theme.tokens.colors.onSurface }]}>{contextTitle}</Text>
-        <Text style={[styles.infoText, { color: theme.tokens.colors.onSurfaceMuted }]}>{contextDescription}</Text>
-      </View>
+      {!dashboardStyle ? (
+        <View style={styles.infoBlock}>
+          <Text style={[styles.infoTitle, { color: theme.tokens.colors.onSurface }]}>{contextTitle}</Text>
+          <Text style={[styles.infoText, { color: theme.tokens.colors.onSurfaceMuted }]}>{contextDescription}</Text>
+        </View>
+      ) : null}
 
       <Modal
         visible={isConfirmVisible}
@@ -184,7 +260,7 @@ export const SosEmergencyButton = ({ state, onTrigger }: Props) => {
         onRequestClose={() => setIsConfirmVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { backgroundColor: theme.tokens.colors.surface }]}>
+          <View style={[styles.modalCard, { backgroundColor: theme.tokens.colors.surface, borderColor: theme.tokens.colors.border }]}>
             <Text style={[styles.modalTitle, { color: theme.tokens.colors.onSurface }]}>Confirm emergency alert</Text>
             <Text style={[styles.modalBody, { color: theme.tokens.colors.onSurfaceMuted }]}>
               This will immediately notify operators and start live status tracking.
@@ -196,7 +272,9 @@ export const SosEmergencyButton = ({ state, onTrigger }: Props) => {
                 accessibilityRole="button"
                 accessibilityLabel="Cancel emergency confirmation"
               >
-                <Text style={[styles.modalSecondaryText, { color: theme.tokens.colors.onSurfaceMuted }]}>Cancel</Text>
+                <Text style={[styles.modalSecondaryText, { color: theme.tokens.colors.onSurfaceMuted }]}>
+                  Cancel
+                </Text>
               </Pressable>
               <Pressable
                 onPress={() => {
@@ -224,22 +302,25 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     minHeight: 260,
   },
+  wrapperDashboard: {
+    minHeight: 196,
+  },
   pulse: {
     position: "absolute",
-    width: 230,
-    height: 230,
+    width: PULSE_SIZE,
+    height: PULSE_SIZE,
     borderRadius: 999,
     borderWidth: 2,
   },
   glow: {
     position: "absolute",
-    width: 220,
-    height: 220,
+    width: GLOW_SIZE,
+    height: GLOW_SIZE,
     borderRadius: 999,
   },
   button: {
-    width: 190,
-    height: 190,
+    width: BUTTON_SIZE,
+    height: BUTTON_SIZE,
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
@@ -259,6 +340,10 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     fontSize: 32,
     letterSpacing: 1.2,
+  },
+  labelDashboard: {
+    fontSize: 34,
+    letterSpacing: 0,
   },
   helper: {
     marginTop: 6,
@@ -281,16 +366,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(2, 6, 23, 0.5)",
-    justifyContent: "center",
-    padding: 24,
-  },
   modalCard: {
     borderRadius: 16,
     padding: 16,
     gap: 12,
+    borderWidth: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    padding: 24,
   },
   modalTitle: {
     fontSize: 18,
@@ -309,7 +395,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   modalSecondaryText: {
-    color: "#334155",
     fontWeight: "600",
   },
   modalDanger: {

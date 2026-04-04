@@ -1,5 +1,6 @@
 import React, { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { ArrowLeft } from "lucide-react-native";
 import { useAppTheme } from "../../theme";
 
 interface Props {
@@ -32,7 +33,7 @@ export const AppHeader = ({ title, subtitle, onBack, rightAction, style }: Props
           accessibilityLabel="Go back"
           hitSlop={8}
         >
-          <Text style={[styles.backArrow, { color: tokens.colors.primary }]}>←</Text>
+          <ArrowLeft size={22} color={tokens.colors.primary} strokeWidth={2.5} />
         </Pressable>
       ) : (
         <View style={styles.placeholder} />
@@ -70,10 +71,6 @@ const styles = StyleSheet.create({
     height: 36,
     justifyContent: "center",
     alignItems: "center",
-  },
-  backArrow: {
-    fontSize: 22,
-    fontWeight: "700",
   },
   titleWrap: {
     flex: 1,

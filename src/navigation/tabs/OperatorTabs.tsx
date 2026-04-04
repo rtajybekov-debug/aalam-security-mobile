@@ -1,16 +1,12 @@
 import React from "react";
-import { Text, Platform } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { ClipboardList, Map } from "lucide-react-native";
 import { OperatorTabParamList } from "../types";
 import { OperatorDashboardScreen } from "../../screens/operator/OperatorDashboardScreen";
 import { OperatorHistoryScreen } from "../../screens/operator/OperatorHistoryScreen";
 import { useAppTheme } from "../../theme";
 
 const Tab = createBottomTabNavigator<OperatorTabParamList>();
-
-function TabIcon({ emoji }: { emoji: string }) {
-  return <Text style={{ fontSize: 22 }}>{emoji}</Text>;
-}
 
 export const OperatorTabs = () => {
   const { tokens } = useAppTheme();
@@ -31,7 +27,7 @@ export const OperatorTabs = () => {
           fontWeight: "600",
         },
         tabBarItemStyle: {
-          paddingVertical: Platform.OS === "ios" ? 4 : 2,
+          paddingVertical: 6,
         },
       }}
     >
@@ -40,7 +36,9 @@ export const OperatorTabs = () => {
         component={OperatorDashboardScreen}
         options={{
           tabBarLabel: "Map",
-          tabBarIcon: () => <TabIcon emoji="🗺️" />,
+          tabBarIcon: ({ color, size }) => (
+            <Map size={size ?? 22} color={color} strokeWidth={2} />
+          ),
           tabBarAccessibilityLabel: "Dashboard map",
         }}
       />
@@ -49,7 +47,9 @@ export const OperatorTabs = () => {
         component={OperatorHistoryScreen}
         options={{
           tabBarLabel: "History",
-          tabBarIcon: () => <TabIcon emoji="📋" />,
+          tabBarIcon: ({ color, size }) => (
+            <ClipboardList size={size ?? 22} color={color} strokeWidth={2} />
+          ),
           tabBarAccessibilityLabel: "Operator history",
         }}
       />

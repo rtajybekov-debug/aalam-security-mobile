@@ -23,22 +23,38 @@ export const palette = {
   violet500: "#8B5CF6",
 } as const;
 
-export const semanticLightColors = {
-  primary: palette.blue600,
-  onPrimary: palette.white,
-  secondary: palette.slate100,
-  onSecondary: palette.slate900,
-  danger: palette.red500,
-  onDanger: palette.white,
-  background: palette.slate50,
-  surface: palette.white,
-  surfaceVariant: palette.slate100,
-  onSurface: palette.slate900,
-  onSurfaceMuted: palette.slate500,
-  border: palette.slate200,
-  success: palette.emerald500,
-  warning: palette.amber500,
+/** Light concept: off-white bg, orange accent, soft shadows */
+export const conceptLightPalette = {
+  background: "#F5F5FA",
+  surface: "#FFFFFF",
+  surfaceVariant: "#F1F1F6",
+  accent: "#FF9F43",
+  accentDark: "#FF7B54",
+  danger: "#FF5C5C",
+  onSurface: "#1E293B",
+  onSurfaceMuted: "#64748B",
+  border: "#E2E8F0",
 } as const;
+
+export const semanticLightColors = {
+  primary: conceptLightPalette.accent,
+  onPrimary: palette.white,
+  secondary: conceptLightPalette.surfaceVariant,
+  onSecondary: conceptLightPalette.onSurface,
+  danger: conceptLightPalette.danger,
+  onDanger: palette.white,
+  background: conceptLightPalette.background,
+  surface: conceptLightPalette.surface,
+  surfaceVariant: conceptLightPalette.surfaceVariant,
+  onSurface: conceptLightPalette.onSurface,
+  onSurfaceMuted: conceptLightPalette.onSurfaceMuted,
+  border: conceptLightPalette.border,
+  success: palette.emerald500,
+  warning: conceptLightPalette.accent,
+} as const;
+
+/** SOS gradient for light mode: orange to red */
+export const lightDangerGradient = ["#FF7B54", "#FF5C5C"] as const;
 
 export const semanticDarkColors = {
   primary: palette.blue500,
@@ -56,3 +72,36 @@ export const semanticDarkColors = {
   success: "#34D399",
   warning: "#FBBF24",
 } as const;
+
+/** Concept style guide palette — neon lime accent on OLED black */
+export const conceptPalette = {
+  accent: "#C8F53A",
+  surface: "#1C1E2A",
+  surfaceInput: "#161822",
+  muted: "#8B8B8B",
+  light: "#F5F5FA",
+  white: "#FFFFFF",
+  background: "#0A0A0A",
+} as const;
+
+/** OLED Dark Mode — neon lime on true black */
+export const semanticOledDarkColors = {
+  primary: conceptPalette.accent,
+  onPrimary: "#000000",
+  secondary: conceptPalette.surface,
+  onSecondary: conceptPalette.white,
+  danger: "#F87171",
+  onDanger: palette.white,
+  background: conceptPalette.background,
+  surface: conceptPalette.surface,
+  surfaceVariant: "#252D3D",
+  onSurface: conceptPalette.white,
+  onSurfaceMuted: conceptPalette.muted,
+  border: "#2A2E3A",
+  success: palette.emerald500,
+  warning: "#FBBF24",
+} as const;
+
+/** For LinearGradient: [startColor, endColor] */
+export const oledDangerGradient = ["#F87171", "#EF4444"] as const;
+export const oledActiveGradient = ["#C8F53A", "#34D399"] as const;

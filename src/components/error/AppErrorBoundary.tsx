@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, PropsWithChildren } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { AlertTriangle } from "lucide-react-native";
 
 interface State {
   hasError: boolean;
@@ -22,7 +23,7 @@ export class AppErrorBoundary extends Component<PropsWithChildren, State> {
       return (
         <View style={styles.container}>
           <View style={styles.iconWrap}>
-            <Text style={styles.icon}>⚠</Text>
+            <AlertTriangle size={32} color="#DC2626" strokeWidth={2} />
           </View>
           <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.message}>
@@ -61,9 +62,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
-  },
-  icon: {
-    fontSize: 32,
   },
   title: {
     fontSize: 22,

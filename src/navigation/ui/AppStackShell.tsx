@@ -1,9 +1,10 @@
 import { NativeStackNavigationOptions } from "@react-navigation/native-stack";
+import { AppStackHeader } from "../../components/navigation/AppStackHeader";
 
 export const appStackScreenOptions: NativeStackNavigationOptions = {
   headerShadowVisible: false,
-  headerBackVisible: true,
-  headerTitleAlign: "left",
+  headerBackVisible: false,
+  header: (props) => <AppStackHeader {...props} />,
   contentStyle: {
     backgroundColor: "transparent",
   },

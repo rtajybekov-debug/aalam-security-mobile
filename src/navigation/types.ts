@@ -17,7 +17,8 @@ export type CommonStackParamList = {
   Terms: undefined;
   Privacy: undefined;
   MyOrganizations: undefined;
-  CreateOrganization: undefined;
+  RequestNewOrganization: undefined;
+  OrganizationRequestSubmitted: undefined;
   OrganizationVenues: { organizationId: string; organizationName: string };
   CreateVenue: { organizationId: string; organizationName: string };
 };
@@ -25,15 +26,18 @@ export type CommonStackParamList = {
 export type UserTabParamList = {
   Home: undefined;
   History: undefined;
-  Safety: undefined;
+  Profile: undefined;
 };
 
 export type UserStackParamList = {
   UserTabs: undefined;
   UserActiveEmergency: { sessionId: string } | undefined;
   UserEmergencyDetails: { sessionId: string };
-  UserEmergencyContacts: undefined;
-  UserCreateEmergencyContact: undefined;
+  UserBindVenue: undefined;
+  UserSetupPin: undefined;
+  UserEditDetails: undefined;
+  UserBillingPlans: undefined;
+  UserBillingAddons: { planName: string; basePrice: number };
 };
 
 export type OperatorTabParamList = {
@@ -61,7 +65,7 @@ export type AdminStackParamList = {
 export type RootStackParamList = {
   Splash: undefined;
   AuthLoading: undefined;
-  Auth: undefined;
+  Auth: NavigatorScreenParams<AuthStackParamList> | undefined;
   Common: NavigatorScreenParams<CommonStackParamList> | undefined;
   User: NavigatorScreenParams<UserStackParamList> | undefined;
   Operator: undefined;

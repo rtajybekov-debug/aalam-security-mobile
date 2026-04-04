@@ -7,15 +7,12 @@ interface Props extends TextInputProps {
   error?: string;
 }
 
-export const AppInput = ({ label, error, style, ...rest }: Props) => {
+export const AppInput = ({ label, error, style, placeholder, ...rest }: Props) => {
   const { tokens } = useAppTheme();
   const [focused, setFocused] = React.useState(false);
 
   return (
     <View style={styles.wrapper}>
-      {label ? (
-        <Text style={[styles.label, { color: tokens.colors.onSurface }]}>{label}</Text>
-      ) : null}
       <TextInput
         style={[
           styles.input,
@@ -30,6 +27,7 @@ export const AppInput = ({ label, error, style, ...rest }: Props) => {
           },
           style,
         ]}
+        placeholder={label ?? placeholder}
         placeholderTextColor={tokens.colors.onSurfaceMuted}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
@@ -46,18 +44,13 @@ const styles = StyleSheet.create({
   wrapper: {
     gap: 4,
   },
-  label: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 2,
-  },
   input: {
-    borderWidth: 1.5,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
     fontSize: 15,
-    minHeight: 48,
+    minHeight: 54,
   },
   error: {
     fontSize: 12,

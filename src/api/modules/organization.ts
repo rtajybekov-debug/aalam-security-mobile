@@ -34,6 +34,12 @@ export const organizationApi = {
   },
 };
 
+export interface BindVenueResponse {
+  id: string;
+  name: string;
+  organization: { id: string; name: string };
+}
+
 export const venueApi = {
   async list(organizationId: string) {
     const { data } = await apiClient.get<Venue[]>(`/venue/organization/${organizationId}`);
@@ -41,6 +47,12 @@ export const venueApi = {
   },
   async create(organizationId: string, payload: { name: string; address?: string; latitude?: number; longitude?: number }) {
     const { data } = await apiClient.post<Venue>(`/venue/organization/${organizationId}`, payload);
+    return data;
+  },
+  async bind(inviteCode: string): Promise<BindVenueResponse> {
+    const { data } = await apiClient.post<BindVenueResponse>("/venue/bind", {
+      inviteCode: inviteCode.trim().toUpperCase(),
+    });
     return data;
   },
 };

@@ -1,15 +1,11 @@
 import React from "react";
-import { Text, Platform } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Settings } from "lucide-react-native";
 import { AdminTabParamList } from "../types";
 import { AdminHomeScreen } from "../../screens/admin/AdminHomeScreen";
 import { useAppTheme } from "../../theme";
 
 const Tab = createBottomTabNavigator<AdminTabParamList>();
-
-function TabIcon({ emoji }: { emoji: string }) {
-  return <Text style={{ fontSize: 22 }}>{emoji}</Text>;
-}
 
 export const AdminTabs = () => {
   const { tokens } = useAppTheme();
@@ -30,7 +26,7 @@ export const AdminTabs = () => {
           fontWeight: "600",
         },
         tabBarItemStyle: {
-          paddingVertical: Platform.OS === "ios" ? 4 : 2,
+          paddingVertical: 6,
         },
       }}
     >
@@ -39,7 +35,9 @@ export const AdminTabs = () => {
         component={AdminHomeScreen}
         options={{
           tabBarLabel: "Admin",
-          tabBarIcon: () => <TabIcon emoji="⚙️" />,
+          tabBarIcon: ({ color, size }) => (
+            <Settings size={size ?? 22} color={color} strokeWidth={2} />
+          ),
           tabBarAccessibilityLabel: "Admin home",
         }}
       />

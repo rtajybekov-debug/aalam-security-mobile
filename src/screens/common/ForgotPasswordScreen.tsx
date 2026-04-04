@@ -2,6 +2,7 @@ import React from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -59,53 +60,52 @@ export const ForgotPasswordScreen = ({ navigation }: Props) => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: tokens.colors.surface,
-              borderColor: tokens.colors.border,
-            },
-          ]}
-        >
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Reset password</Text>
-          <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Enter your email and we’ll send you a link to reset your password.
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>
+            Password recovery
           </Text>
-
-          <View style={styles.form}>
-            <Controller
-              control={control}
-              name="email"
-              render={({ field: { onChange, value } }) => (
-                <AppInput
-                  label="Email"
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  placeholder="you@example.com"
-                  value={value}
-                  onChangeText={onChange}
-                  error={errors.email?.message}
-                  autoComplete="email"
-                />
-              )}
-            />
-            <ActionButton
-              label={isSubmitting ? "Sending..." : "Send reset link"}
-              disabled={isSubmitting}
-              loading={isSubmitting}
-              onPress={handleSubmit(onSubmit)}
-              size="large"
-            />
-          </View>
+          <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
+            Enter your email to receive a reset link
+          </Text>
         </View>
 
-        <ActionButton
-          variant="ghost"
-          label="Back to login"
+        <View style={styles.form}>
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, value } }) => (
+              <AppInput
+                label="Email"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                returnKeyType="done"
+                value={value}
+                onChangeText={onChange}
+                error={errors.email?.message}
+                autoComplete="email"
+                onSubmitEditing={handleSubmit(onSubmit)}
+              />
+            )}
+          />
+
+          <ActionButton
+            label={isSubmitting ? "Sending..." : "Send reset link"}
+            disabled={isSubmitting}
+            loading={isSubmitting}
+            onPress={handleSubmit(onSubmit)}
+            size="large"
+          />
+        </View>
+
+        <Pressable
           onPress={() => navigation.navigate("Login")}
-          style={styles.back}
-        />
+          style={styles.backWrap}
+          accessibilityRole="link"
+        >
+          <Text style={[styles.backText, { color: tokens.colors.onSurfaceMuted }]}>
+            Back to Login
+          </Text>
+        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -115,17 +115,32 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: {
     flexGrow: 1,
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingTop: 80,
+    paddingBottom: 40,
+  },
+  header: {
+    marginBottom: 28,
+  },
+  title: {
+    fontSize: 34,
+    fontWeight: "800",
+    letterSpacing: -0.8,
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  form: {
     gap: 16,
-    marginTop: 80,
   },
-  card: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 24,
+  backWrap: {
+    alignItems: "center",
+    paddingVertical: 20,
   },
-  title: { fontSize: 22, fontWeight: "800", marginBottom: 8 },
-  subtitle: { fontSize: 14, lineHeight: 20, marginBottom: 24 },
-  form: { gap: 14 },
-  back: { alignSelf: "center", marginTop: 8 },
+  backText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
 });

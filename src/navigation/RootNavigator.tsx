@@ -19,11 +19,8 @@ export const RootNavigator = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
 
-  if (!isBootstrapped) {
-    return <SplashScreen />;
-  }
-
-  const initialRouteName = isAuthenticated && user ? roleToRootScreen[user.role] : "Auth";
+  const initialRouteName =
+    isBootstrapped && isAuthenticated && user ? roleToRootScreen[user.role] : "Splash";
 
   return (
     <NavigationContainer>

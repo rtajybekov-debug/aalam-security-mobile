@@ -5,6 +5,7 @@ import { UserProfile } from "../types/user";
 import { authApi } from "../api/modules/auth";
 import { usersApi } from "../api/modules/users";
 import { secureStorage } from "./secureStorage";
+import { useUserSessionStore } from "./userSessionStore";
 
 interface AuthState {
   accessToken: string | null;
@@ -56,6 +57,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isAuthenticated: true,
           isBootstrapped: true,
         });
+        await useUserSessionStore.getState().hydrate();
         return;
       } catch {
         // Access token expired or invalid — fall through to refresh
@@ -75,6 +77,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isAuthenticated: true,
           isBootstrapped: true,
         });
+        await useUserSessionStore.getState().hydrate();
         return;
       } catch {}
     }
@@ -92,6 +95,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       role: me.role,
       isAuthenticated: true,
     });
+    await useUserSessionStore.getState().hydrate();
   },
   register: async (email: string, password: string) => {
     const tokens = await authApi.register({ email, password });
@@ -103,6 +107,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       role: me.role,
       isAuthenticated: true,
     });
+    await useUserSessionStore.getState().hydrate();
   },
   refresh: async () => {
     const current = get();
@@ -128,7 +133,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await authApi.logout({ refreshToken });
       } catch {}
     }
-    await Promise.all([secureStorage.clearTokens(), secureStorage.clearUser()]);
+    await Promise.all([
+      secureStorage.clearTokens(),
+      secureStorage.clearUser(),
+      useUserSessionStore.getState().reset(),
+    ]);
 
     set({
       accessToken: null,

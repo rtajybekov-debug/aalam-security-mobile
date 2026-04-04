@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { ClipboardList } from "lucide-react-native";
 import { useAppTheme } from "../../theme";
 import { ActionButton } from "../ui/ActionButton";
 
@@ -15,7 +16,7 @@ export const EmptyState = ({ title, subtitle, actionLabel, onAction }: Props) =>
   return (
     <View style={styles.container}>
       <View style={[styles.iconWrap, { backgroundColor: tokens.colors.surfaceVariant }]}>
-        <Text style={styles.icon}>📋</Text>
+        <ClipboardList size={32} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
       </View>
       <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{title}</Text>
       {subtitle ? (
@@ -40,7 +41,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 4,
   },
-  icon: { fontSize: 32 },
   title: { fontSize: 17, fontWeight: "700", textAlign: "center" },
   subtitle: { fontSize: 14, textAlign: "center", lineHeight: 20 },
   actionWrap: { marginTop: 8, minWidth: 180 },

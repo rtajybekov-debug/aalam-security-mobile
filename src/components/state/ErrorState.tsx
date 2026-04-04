@@ -1,7 +1,6 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { useAppTheme } from "../../theme";
-import { RetryButton } from "./RetryButton";
+import { StyleSheet, View } from "react-native";
+import { StatusStateCard } from "./StatusStateCard";
 
 interface Props {
   title?: string;
@@ -11,35 +10,24 @@ interface Props {
 }
 
 export const ErrorState = ({
-  title = "Something went wrong",
+  title = "Network error",
   message = "Please check your connection and try again.",
   onRetry,
-  retryLabel = "Try again",
+  retryLabel = "Retry",
 }: Props) => {
-  const { tokens } = useAppTheme();
   return (
     <View style={styles.container}>
-      <View style={[styles.iconWrap, { backgroundColor: "#FEE2E2" }]}>
-        <Text style={styles.icon}>⚠</Text>
-      </View>
-      <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{title}</Text>
-      <Text style={[styles.message, { color: tokens.colors.onSurfaceMuted }]}>{message}</Text>
-      {onRetry ? <RetryButton onPress={onRetry} label={retryLabel} /> : null}
+      <StatusStateCard
+        badge={title}
+        badgeColor="#93C5FD"
+        message={message}
+        actionLabel={onRetry ? retryLabel : undefined}
+        onAction={onRetry}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 32, alignItems: "center", justifyContent: "center", gap: 10 },
-  iconWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  icon: { fontSize: 32 },
-  title: { fontSize: 17, fontWeight: "700", textAlign: "center" },
-  message: { fontSize: 14, textAlign: "center", lineHeight: 20 },
+  container: { flex: 1, padding: 24, alignItems: "center", justifyContent: "center" },
 });

@@ -1,6 +1,6 @@
 import React, { createContext, PropsWithChildren, useContext } from "react";
 import { useColorScheme } from "react-native";
-import { darkTokens, lightTokens, ThemeTokens } from "./tokens";
+import { lightTokens, oledDarkTokens, ThemeTokens } from "./tokens";
 
 export type AppTheme = {
   tokens: ThemeTokens;
@@ -8,14 +8,16 @@ export type AppTheme = {
 };
 
 const ThemeContext = createContext<AppTheme>({
-  tokens: lightTokens,
-  isDark: false,
+  tokens: oledDarkTokens,
+  isDark: true,
 });
 
 export const AppThemeProvider = ({ children }: PropsWithChildren) => {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const tokens = isDark ? darkTokens : lightTokens;
+  // Prefer OLED dark: iOS often reports null briefly; light mode would show wrong auth styling.
+  // App is locked to dark UI via expo.userInterfaceStyle = "dark" in app.json.
+  const isDark = colorScheme !== "light";
+  const tokens = isDark ? oledDarkTokens : lightTokens;
 
   return <ThemeContext.Provider value={{ tokens, isDark }}>{children}</ThemeContext.Provider>;
 };

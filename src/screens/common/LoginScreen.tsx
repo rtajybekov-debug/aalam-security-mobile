@@ -58,100 +58,94 @@ export const LoginScreen = ({ navigation }: Props) => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Logo */}
-        <View style={styles.logoWrap}>
-          <View style={[styles.logoBadge, { backgroundColor: tokens.colors.danger }]}>
-            <Text style={styles.logoText}>SOS</Text>
-          </View>
-          <Text style={[styles.appName, { color: tokens.colors.onSurface }]}>Alarm SOS</Text>
-          <Text style={[styles.appTagline, { color: tokens.colors.onSurfaceMuted }]}>
-            Emergency Response Platform
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Welcome back</Text>
+          <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
+            Sign in to continue
           </Text>
         </View>
 
-        {/* Card */}
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: tokens.colors.surface,
-              borderColor: tokens.colors.border,
-              shadowColor: tokens.colors.onSurface,
-            },
-          ]}
-        >
-          <Text style={[styles.cardTitle, { color: tokens.colors.onSurface }]}>Sign in</Text>
-          <Text style={[styles.cardSubtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Welcome back. Enter your credentials to continue.
-          </Text>
+        <View style={styles.form}>
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, value } }) => (
+              <AppInput
+                label="Email"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                returnKeyType="next"
+                value={value}
+                onChangeText={onChange}
+                error={errors.email?.message}
+                autoComplete="email"
+              />
+            )}
+          />
 
-          <View style={styles.form}>
-            <Controller
-              control={control}
-              name="email"
-              render={({ field: { onChange, value } }) => (
-                <AppInput
-                  label="Email"
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  returnKeyType="next"
-                  placeholder="you@example.com"
-                  value={value}
-                  onChangeText={onChange}
-                  error={errors.email?.message}
-                  autoComplete="email"
-                />
-              )}
-            />
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, value } }) => (
+              <AppInput
+                label="Password"
+                secureTextEntry
+                returnKeyType="done"
+                value={value}
+                onChangeText={onChange}
+                error={errors.password?.message}
+                autoComplete="current-password"
+                onSubmitEditing={handleSubmit(onSubmit)}
+              />
+            )}
+          />
 
-            <Controller
-              control={control}
-              name="password"
-              render={({ field: { onChange, value } }) => (
-                <AppInput
-                  label="Password"
-                  secureTextEntry
-                  returnKeyType="done"
-                  placeholder="••••••••"
-                  value={value}
-                  onChangeText={onChange}
-                  error={errors.password?.message}
-                  autoComplete="current-password"
-                  onSubmitEditing={handleSubmit(onSubmit)}
-                />
-              )}
-            />
+          <Pressable
+            onPress={() => navigation.navigate("ForgotPassword")}
+            style={styles.forgotWrap}
+            accessibilityRole="link"
+          >
+            <Text style={[styles.forgotText, { color: tokens.colors.primary }]}>
+              Forgot password?
+            </Text>
+          </Pressable>
 
-            <Pressable
-              onPress={() => navigation.navigate("ForgotPassword")}
-              style={styles.forgotWrap}
-              accessibilityRole="link"
+          <ActionButton
+            label={isSubmitting ? "Signing in..." : "Login"}
+            disabled={isSubmitting}
+            loading={isSubmitting}
+            onPress={handleSubmit(onSubmit)}
+            size="large"
+          />
+
+          <ActionButton
+            variant="secondary"
+            label="Register"
+            onPress={() => navigation.navigate("Register")}
+            size="large"
+          />
+        </View>
+
+        <View style={styles.footer}>
+          <Pressable
+            style={styles.legalWrap}
+            accessibilityRole="link"
+          >
+            <Text
+              style={[styles.legalLink, { color: tokens.colors.onSurfaceMuted }]}
+              onPress={() => navigation.navigate("Terms")}
             >
-              <Text style={[styles.forgotText, { color: tokens.colors.primary }]}>Forgot password?</Text>
-            </Pressable>
-
-            <ActionButton
-              label={isSubmitting ? "Signing in..." : "Sign in"}
-              disabled={isSubmitting}
-              loading={isSubmitting}
-              onPress={handleSubmit(onSubmit)}
-              size="large"
-            />
-          </View>
+              Terms
+            </Text>
+            <Text style={[styles.legalDot, { color: tokens.colors.onSurfaceMuted }]}>·</Text>
+            <Text
+              style={[styles.legalLink, { color: tokens.colors.onSurfaceMuted }]}
+              onPress={() => navigation.navigate("Privacy")}
+            >
+              Privacy
+            </Text>
+          </Pressable>
         </View>
-
-        {/* Register link */}
-        <Pressable
-          onPress={() => navigation.navigate("Register")}
-          style={styles.linkWrap}
-          accessibilityRole="link"
-          accessibilityLabel="Go to registration"
-        >
-          <Text style={[styles.linkText, { color: tokens.colors.onSurfaceMuted }]}>
-            No account yet?{" "}
-            <Text style={[styles.linkAccent, { color: tokens.colors.primary }]}>Register</Text>
-          </Text>
-        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -161,71 +155,52 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: {
     flexGrow: 1,
-    justifyContent: "center",
-    padding: 24,
-    gap: 24,
+    paddingHorizontal: 24,
+    paddingTop: 80,
+    paddingBottom: 40,
   },
-  logoWrap: {
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 8,
+  header: {
+    marginBottom: 32,
   },
-  logoBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  logoText: {
-    color: "#FFFFFF",
+  title: {
+    fontSize: 34,
     fontWeight: "800",
-    fontSize: 22,
-    letterSpacing: 1,
+    letterSpacing: -0.8,
+    fontStyle: "italic",
+    marginBottom: 6,
   },
-  appName: {
-    fontSize: 26,
-    fontWeight: "800",
-    letterSpacing: -0.5,
-  },
-  appTagline: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  card: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 24,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
-  },
-  cardTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    letterSpacing: -0.3,
-    marginBottom: 4,
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 20,
+  subtitle: {
+    fontSize: 15,
   },
   form: {
-    gap: 14,
+    gap: 16,
   },
-  forgotWrap: { alignSelf: "flex-end", marginTop: -4 },
-  forgotText: { fontSize: 14, fontWeight: "600" },
-  linkWrap: {
-    alignItems: "center",
-    paddingVertical: 8,
+  forgotWrap: {
+    alignSelf: "flex-end",
+    marginTop: -6,
+    marginBottom: 4,
   },
-  linkText: {
+  forgotText: {
     fontSize: 14,
+    fontWeight: "600",
   },
-  linkAccent: {
-    fontWeight: "700",
+  footer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    paddingTop: 32,
+    paddingBottom: 8,
+  },
+  legalWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  legalLink: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  legalDot: {
+    fontSize: 14,
   },
 });

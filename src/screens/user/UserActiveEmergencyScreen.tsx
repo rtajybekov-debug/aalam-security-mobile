@@ -1,6 +1,21 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { Linking, Platform, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import Animated, {
+  Easing,
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
+import {
+  getBrightnessAsync,
+  isBrightnessAvailable,
+  requestBrightnessPermissionsAsync,
+  setBrightnessAsync,
+} from "../../utils/brightness";
 import { UserStackParamList } from "../../navigation/types";
 import { useEmergencyStore } from "../../stores/emergencyStore";
 import { emergencyApi } from "../../api/modules/emergency";
@@ -9,31 +24,78 @@ import { StatusChip } from "../../components/ui/StatusChip";
 import { AppCard } from "../../components/ui/AppCard";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
+import { spacing } from "../../theme";
 
 type Props = NativeStackScreenProps<UserStackParamList, "UserActiveEmergency">;
 
 export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
   const { tokens } = useAppTheme();
   const session = useEmergencyStore((state) => state.activeSession);
+  const setActiveSession = useEmergencyStore((state) => state.setActiveSession);
   const isSendingLocation = useEmergencyStore((state) => state.isSendingLocation);
   const lastLocationSentAt = useEmergencyStore((state) => state.lastLocationSentAt);
-  const setActiveSession = useEmergencyStore((state) => state.setActiveSession);
-  const [nowMs, setNowMs] = React.useState(Date.now());
-  const [isClosing, setIsClosing] = React.useState(false);
 
-  React.useEffect(() => {
-    const id = setInterval(() => setNowMs(Date.now()), 1000);
-    return () => clearInterval(id);
+  const [isClosing, setIsClosing] = useState(false);
+  const [stealthOn, setStealthOn] = useState(false);
+  const originalBrightnessRef = useRef<number>(1);
+
+  const bgProgress = useSharedValue(1);
+  const radarScale = useSharedValue(1);
+  const radarOpacity = useSharedValue(0.5);
+
+  useEffect(() => {
+    bgProgress.value = withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) });
+    radarScale.value = withRepeat(
+      withTiming(1.4, { duration: 2000, easing: Easing.out(Easing.ease) }),
+      -1,
+      false,
+    );
+    radarOpacity.value = withRepeat(
+      withSequence(
+        withTiming(0.2, { duration: 1000 }),
+        withTiming(0.6, { duration: 1000 }),
+      ),
+      -1,
+      true,
+    );
   }, []);
 
-  const timerText = useMemo(() => {
-    if (!session?.createdAt) return "--:--";
-    const elapsed = nowMs - new Date(session.createdAt).getTime();
-    const totalSec = Math.max(0, Math.floor(elapsed / 1000));
-    const mm = String(Math.floor(totalSec / 60)).padStart(2, "0");
-    const ss = String(totalSec % 60).padStart(2, "0");
-    return `${mm}:${ss}`;
-  }, [nowMs, session?.createdAt]);
+  const handleStealthMode = async () => {
+    if (!isBrightnessAvailable()) {
+      toastBus.show({
+        message: "Stealth Mode requires expo-brightness. Run: npx expo install expo-brightness",
+        severity: "info",
+      });
+      return;
+    }
+    if (stealthOn) {
+      try {
+        await setBrightnessAsync(originalBrightnessRef.current);
+      } catch {
+        // ignore
+      }
+      setStealthOn(false);
+    } else {
+      try {
+        const { status } = await requestBrightnessPermissionsAsync();
+        if (status !== "granted") {
+          toastBus.show({ message: "Brightness permission required for Stealth Mode.", severity: "warning" });
+          return;
+        }
+        const current = await getBrightnessAsync();
+        originalBrightnessRef.current = current;
+        await setBrightnessAsync(0);
+        setStealthOn(true);
+        toastBus.show({ message: "Stealth mode on. Brightness restored on exit.", severity: "info" });
+      } catch {
+        toastBus.show({ message: "Could not change brightness.", severity: "warning" });
+      }
+    }
+  };
+
+  const handleCallDispatch = () => {
+    Linking.openURL("tel:112");
+  };
 
   const closeSession = async () => {
     if (!session?.id) return;
@@ -49,6 +111,20 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
       setIsClosing(false);
     }
   };
+
+  const endBg = tokens.colors.background;
+  const animatedBg = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      bgProgress.value,
+      [0, 1],
+      ["#1A0A0A", endBg],
+    ),
+  }));
+
+  const animatedRadar = useAnimatedStyle(() => ({
+    transform: [{ scale: radarScale.value }],
+    opacity: radarOpacity.value,
+  }));
 
   if (!session) {
     return (
@@ -68,127 +144,138 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
   }
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
-      {/* Danger banner */}
-      <View style={[styles.banner, { backgroundColor: tokens.colors.danger }]}>
-        <Text style={styles.bannerText}>🚨  SOS ACTIVE</Text>
-        <Text style={styles.bannerSub}>Help has been notified</Text>
-      </View>
-
-      <View style={styles.content}>
-        {/* Status */}
-        <View style={styles.row}>
-          <StatusChip status={session.status} />
-          <Text style={[styles.sessionId, { color: tokens.colors.onSurfaceMuted }]}>
-            #{session.id.slice(0, 8)}
-          </Text>
+    <Animated.View style={[styles.root, animatedBg]}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.radarWrap}>
+          <Animated.View
+            style={[
+              styles.radarRing,
+              { borderColor: tokens.colors.primary },
+              animatedRadar,
+            ]}
+          />
         </View>
 
-        {/* Timer card */}
-        <View
-          style={[
-            styles.timerCard,
-            { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border },
-          ]}
-        >
-          <Text style={[styles.timerLabel, { color: tokens.colors.onSurfaceMuted }]}>
-            ELAPSED TIME
-          </Text>
-          <Text style={[styles.timerValue, { color: tokens.colors.onSurface }]}>{timerText}</Text>
-        </View>
-
-        {/* Telemetry */}
-        <AppCard>
-          <Text style={[styles.sectionLabel, { color: tokens.colors.onSurfaceMuted }]}>
-            LIVE TRACKING
-          </Text>
-          <View style={styles.telemetryRow}>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: isSendingLocation ? tokens.colors.success : tokens.colors.border },
-              ]}
-            />
-            <Text style={[styles.telemetryText, { color: tokens.colors.onSurface }]}>
-              {isSendingLocation ? "Sending location..." : "Location idle"}
-            </Text>
+        <View style={styles.content}>
+          <View style={styles.topRow}>
+            <Text style={[styles.activeTitle, { color: tokens.colors.onSurface }]}>Active SOS</Text>
+            <View style={[styles.progressBadge, { backgroundColor: "rgba(140,63,23,0.85)" }]}>
+              <Text style={[styles.progressText, { color: "#FFD2A3" }]}>IN PROGRESS</Text>
+            </View>
           </View>
-          {lastLocationSentAt ? (
-            <Text style={[styles.telemetrySub, { color: tokens.colors.onSurfaceMuted }]}>
-              Last ping: {lastLocationSentAt}
-            </Text>
-          ) : null}
-        </AppCard>
+          <Text style={[styles.activeSub, { color: tokens.colors.onSurfaceMuted }]}>Elapsed: 00:03:42</Text>
 
-        <View style={styles.spacer} />
+          <AppCard style={styles.mapCard} flat>
+            <View style={styles.mapArea}>
+              <View style={[styles.youDot, { backgroundColor: tokens.colors.primary }]} />
+              <Text style={[styles.youLabel, { color: tokens.colors.primary }]}>You</Text>
+              <View style={styles.route} />
+            </View>
+          </AppCard>
 
-        {/* Close button */}
-        <ActionButton
-          variant="danger"
-          label={isClosing ? "Closing..." : "Close SOS Session"}
-          onPress={() => void closeSession()}
-          loading={isClosing}
-          disabled={isClosing}
-          size="large"
-          accessibilityLabel="Close active SOS session"
-        />
-      </View>
-    </SafeAreaView>
+          <ActionButton label="Call Support" onPress={handleCallDispatch} size="large" />
+
+          <AppCard style={styles.stealthCard} flat>
+            <View style={styles.stealthRow}>
+              <View style={styles.stealthCopy}>
+                <Text style={[styles.stealthTitle, { color: tokens.colors.onSurface }]}>Stealth mode</Text>
+                <Text style={[styles.stealthHint, { color: tokens.colors.onSurfaceMuted }]}>
+                  {isSendingLocation ? "Sending location, silent mode enabled" : "Screen dark, vibration disabled"}
+                </Text>
+                {lastLocationSentAt ? (
+                  <Text style={[styles.telemetrySub, { color: tokens.colors.onSurfaceMuted }]}>Last ping: {lastLocationSentAt}</Text>
+                ) : null}
+              </View>
+              <ActionButton
+                variant="secondary"
+                label={stealthOn ? "On" : "Off"}
+                onPress={() => void handleStealthMode()}
+                size="small"
+              />
+            </View>
+          </AppCard>
+
+          <Text style={[styles.actionsLabel, { color: tokens.colors.onSurface }]}>Actions</Text>
+          <View style={styles.actionRow}>
+            <ActionButton variant="secondary" label="Send message" onPress={() => {}} size="default" />
+            <ActionButton variant="secondary" label="Send photo" onPress={() => {}} size="default" />
+          </View>
+          <ActionButton variant="secondary" label="Update alert type" onPress={() => {}} />
+
+          <View style={styles.spacer} />
+
+          <ActionButton
+            variant="danger"
+            label={isClosing ? "Closing..." : "Close session (confirm)"}
+            onPress={() => void closeSession()}
+            loading={isClosing}
+            disabled={isClosing}
+            size="large"
+          />
+          <View style={styles.statusHidden}>
+            <StatusChip status={session.status} />
+            <Text style={[styles.sessionId, { color: tokens.colors.onSurfaceMuted }]}>#{session.id.slice(0, 8)}</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  banner: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+  safeArea: { flex: 1 },
+  radarWrap: {
+    position: "absolute",
+    top: 88,
+    left: 0,
+    right: 0,
     alignItems: "center",
-    gap: 2,
   },
-  bannerText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "800",
-    letterSpacing: 0.5,
+  radarRing: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 2,
   },
-  bannerSub: {
-    color: "rgba(255,255,255,0.85)",
-    fontSize: 13,
+  content: { flex: 1, padding: spacing.lg, gap: spacing.md, marginTop: 120 },
+  topRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  progressBadge: {
+    borderRadius: 10,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
   },
-  content: { flex: 1, padding: 20, gap: 16 },
-  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  sessionId: { fontSize: 12, fontFamily: "monospace" },
-  timerCard: {
+  progressText: { fontSize: 11, fontWeight: "800", letterSpacing: 0.4 },
+  activeTitle: { fontSize: 42, fontWeight: "800", letterSpacing: -0.8 },
+  activeSub: { fontSize: 18 },
+  mapCard: { padding: 0, overflow: "hidden" },
+  mapArea: {
+    height: 180,
     borderRadius: 16,
-    borderWidth: 1,
-    padding: 20,
+    backgroundColor: "#12254A",
     alignItems: "center",
+    justifyContent: "center",
   },
-  timerLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    marginBottom: 8,
-  },
-  timerValue: {
-    fontSize: 48,
-    fontWeight: "800",
-    letterSpacing: -1,
-    fontVariant: ["tabular-nums"],
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    marginBottom: 10,
-  },
-  telemetryRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  telemetryText: { fontSize: 14, fontWeight: "600" },
-  telemetrySub: { fontSize: 12, marginTop: 4, marginLeft: 16 },
+  route: { width: 180, height: 9, borderRadius: 12, backgroundColor: "#89B9FF", marginTop: 30 },
+  youDot: { width: 14, height: 14, borderRadius: 99, marginTop: 4 },
+  youLabel: { marginTop: 4, fontSize: 14, fontWeight: "700" },
+  stealthCard: { borderColor: "rgba(255,255,255,0.08)" },
+  stealthRow: { flexDirection: "row", justifyContent: "space-between", gap: spacing.md },
+  stealthCopy: { flex: 1, gap: 3 },
+  stealthTitle: { fontSize: 22, fontWeight: "700", letterSpacing: -0.3 },
+  stealthHint: { fontSize: 13, lineHeight: 19 },
+  actionsLabel: { fontSize: 30, fontWeight: "700", letterSpacing: -0.45 },
+  sessionId: { fontSize: 12, fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" },
+  telemetrySub: { fontSize: 12, marginTop: 2 },
+  actionRow: { flexDirection: "row", gap: spacing.sm },
   spacer: { flex: 1 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", gap: 16, padding: 24 },
+  statusHidden: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: spacing.lg,
+    padding: spacing.xl,
+  },
   emptyText: { fontSize: 15 },
 });

@@ -4,8 +4,11 @@ import { UserStackParamList } from "../types";
 import { UserTabs } from "../tabs/UserTabs";
 import { UserActiveEmergencyScreen } from "../../screens/user/UserActiveEmergencyScreen";
 import { UserEmergencyDetailsScreen } from "../../screens/user/UserEmergencyDetailsScreen";
-import { UserEmergencyContactsScreen } from "../../screens/user/UserEmergencyContactsScreen";
-import { UserCreateEmergencyContactScreen } from "../../screens/user/UserCreateEmergencyContactScreen";
+import { BindVenueScreen } from "../../screens/user/BindVenueScreen";
+import { SetupPinScreen } from "../../screens/user/SetupPinScreen";
+import { UserEditDetailsScreen } from "../../screens/user/UserEditDetailsScreen";
+import { UserBillingPlansScreen } from "../../screens/user/UserBillingPlansScreen";
+import { UserBillingAddonsScreen } from "../../screens/user/UserBillingAddonsScreen";
 import { appStackScreenOptions } from "../ui/AppStackShell";
 
 const Stack = createNativeStackNavigator<UserStackParamList>();
@@ -24,14 +27,28 @@ export const UserStack = () => (
       options={{ title: "Emergency Details" }}
     />
     <Stack.Screen
-      name="UserEmergencyContacts"
-      component={UserEmergencyContactsScreen}
-      options={{ title: "Emergency Contacts" }}
+      name="UserBindVenue"
+      component={BindVenueScreen}
+      options={{ headerShown: false }}
     />
     <Stack.Screen
-      name="UserCreateEmergencyContact"
-      component={UserCreateEmergencyContactScreen}
-      options={{ title: "Add Contact" }}
+      name="UserSetupPin"
+      component={SetupPinScreen}
+      options={{ title: "Enable 2FA" }}
+    />
+    <Stack.Screen
+      name="UserEditDetails"
+      component={UserEditDetailsScreen}
+    />
+    <Stack.Screen
+      name="UserBillingPlans"
+      component={UserBillingPlansScreen}
+      options={{ title: "Billing" }}
+    />
+    <Stack.Screen
+      name="UserBillingAddons"
+      component={UserBillingAddonsScreen}
+      options={{ title: "Billing Add-ons" }}
     />
   </Stack.Navigator>
 );

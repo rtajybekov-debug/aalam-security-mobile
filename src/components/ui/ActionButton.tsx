@@ -1,8 +1,15 @@
 import React from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from "react-native";
 import { useAppTheme } from "../../theme";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "outline";
 type Size = "default" | "large" | "small";
 
 interface Props {
@@ -12,6 +19,8 @@ interface Props {
   disabled?: boolean;
   variant?: Variant;
   size?: Size;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
   accessibilityLabel?: string;
   accessibilityHint?: string;
   style?: ViewStyle;
@@ -24,21 +33,26 @@ export const ActionButton = ({
   disabled,
   variant = "primary",
   size = "default",
+  leftIcon,
+  rightIcon,
   accessibilityLabel,
   accessibilityHint,
   style,
 }: Props) => {
   const { tokens } = useAppTheme();
 
+  const height = size === "large" ? 56 : size === "small" ? 42 : 50;
+
   const getContainerStyle = (): ViewStyle => {
     const base: ViewStyle = {
-      borderRadius: 12,
-      minHeight: size === "large" ? 54 : size === "small" ? 38 : 48,
+      borderRadius: 14,
+      minHeight: height,
       justifyContent: "center",
       alignItems: "center",
       flexDirection: "row",
-      paddingHorizontal: 20,
+      paddingHorizontal: 24,
       gap: 8,
+      minWidth: 44,
     };
     if (variant === "primary") {
       return { ...base, backgroundColor: disabled ? tokens.colors.border : tokens.colors.primary };
@@ -50,8 +64,16 @@ export const ActionButton = ({
       return {
         ...base,
         backgroundColor: tokens.colors.surface,
-        borderWidth: 1.5,
+        borderWidth: 1,
         borderColor: tokens.colors.border,
+      };
+    }
+    if (variant === "outline") {
+      return {
+        ...base,
+        backgroundColor: "transparent",
+        borderWidth: 1,
+        borderColor: disabled ? tokens.colors.border : tokens.colors.onSurfaceMuted,
       };
     }
     return { ...base, backgroundColor: "transparent" };
@@ -61,9 +83,11 @@ export const ActionButton = ({
     if (disabled && !loading) return tokens.colors.onSurfaceMuted;
     if (variant === "primary") return tokens.colors.onPrimary;
     if (variant === "danger") return tokens.colors.onDanger;
-    if (variant === "secondary") return tokens.colors.onSurface;
+    if (variant === "secondary" || variant === "outline") return tokens.colors.onSurface;
     return tokens.colors.primary;
   };
+
+  const textColor = getTextColor();
 
   return (
     <Pressable
@@ -74,10 +98,17 @@ export const ActionButton = ({
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint}
     >
-      {loading ? <ActivityIndicator size="small" color={getTextColor()} /> : null}
-      <Text style={[styles.label, { color: getTextColor(), fontSize: size === "small" ? 13 : 15 }]}>
-        {label}
-      </Text>
+      {loading ? (
+        <ActivityIndicator size="small" color={textColor} />
+      ) : (
+        <>
+          {leftIcon ? <View>{leftIcon}</View> : null}
+          <Text style={[styles.label, { color: textColor, fontSize: size === "small" ? 13 : 16 }]}>
+            {label}
+          </Text>
+          {rightIcon ? <View>{rightIcon}</View> : null}
+        </>
+      )}
     </Pressable>
   );
 };

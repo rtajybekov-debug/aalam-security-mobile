@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -18,11 +18,19 @@ import { AppInput } from "../../components/ui/AppInput";
 import { ActionButton } from "../../components/ui/ActionButton";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
+import { Check } from "lucide-react-native";
 
-const schema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
+const schema = z
+  .object({
+    name: z.string().min(1, "Full name is required"),
+    email: z.string().email("Enter a valid email"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type FormValues = z.infer<typeof schema>;
 type Props = NativeStackScreenProps<AuthStackParamList, "Register">;
@@ -30,16 +38,22 @@ type Props = NativeStackScreenProps<AuthStackParamList, "Register">;
 export const RegisterScreen = ({ navigation }: Props) => {
   const { tokens } = useAppTheme();
   const register = useAuthStore((state) => state.register);
+  const [accepted, setAccepted] = useState(false);
+
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
   });
 
   const onSubmit = async (values: FormValues) => {
+    if (!accepted) {
+      toastBus.show({ message: "Please accept Terms and Privacy.", severity: "error" });
+      return;
+    }
     try {
       await register(values.email, values.password);
       toastBus.show({ message: "Account created successfully.", severity: "success" });
@@ -58,108 +72,121 @@ export const RegisterScreen = ({ navigation }: Props) => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Logo */}
-        <View style={styles.logoWrap}>
-          <View style={[styles.logoBadge, { backgroundColor: tokens.colors.primary }]}>
-            <Text style={styles.logoText}>SOS</Text>
-          </View>
-          <Text style={[styles.appName, { color: tokens.colors.onSurface }]}>Create account</Text>
-          <Text style={[styles.appTagline, { color: tokens.colors.onSurfaceMuted }]}>
-            Join the emergency response platform
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Create account</Text>
+          <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
+            Join Alarm SOS
           </Text>
         </View>
 
-        {/* Card */}
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: tokens.colors.surface,
-              borderColor: tokens.colors.border,
-              shadowColor: tokens.colors.onSurface,
-            },
-          ]}
-        >
-          <Text style={[styles.cardTitle, { color: tokens.colors.onSurface }]}>Sign up</Text>
-          <Text style={[styles.cardSubtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Enter your details to get started.
-          </Text>
+        <View style={styles.form}>
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { onChange, value } }) => (
+              <AppInput
+                label="Full name"
+                autoCapitalize="words"
+                returnKeyType="next"
+                value={value}
+                onChangeText={onChange}
+                error={errors.name?.message}
+                autoComplete="name"
+              />
+            )}
+          />
 
-          <View style={styles.form}>
-            <Controller
-              control={control}
-              name="email"
-              render={({ field: { onChange, value } }) => (
-                <AppInput
-                  label="Email"
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  returnKeyType="next"
-                  placeholder="you@example.com"
-                  value={value}
-                  onChangeText={onChange}
-                  error={errors.email?.message}
-                  autoComplete="email"
-                />
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, value } }) => (
+              <AppInput
+                label="Email"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                returnKeyType="next"
+                value={value}
+                onChangeText={onChange}
+                error={errors.email?.message}
+                autoComplete="email"
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, value } }) => (
+              <AppInput
+                label="Password"
+                secureTextEntry
+                returnKeyType="next"
+                value={value}
+                onChangeText={onChange}
+                error={errors.password?.message}
+                autoComplete="new-password"
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="confirmPassword"
+            render={({ field: { onChange, value } }) => (
+              <AppInput
+                label="Confirm password"
+                secureTextEntry
+                returnKeyType="done"
+                value={value}
+                onChangeText={onChange}
+                error={errors.confirmPassword?.message}
+                autoComplete="new-password"
+                onSubmitEditing={handleSubmit(onSubmit)}
+              />
+            )}
+          />
+
+          <Pressable
+            style={styles.checkRow}
+            onPress={() => setAccepted((v) => !v)}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: accepted }}
+          >
+            <View
+              style={[
+                styles.checkbox,
+                {
+                  borderColor: accepted ? tokens.colors.primary : tokens.colors.border,
+                  backgroundColor: accepted ? tokens.colors.primary : "transparent",
+                },
+              ]}
+            >
+              {accepted && (
+                <Check size={14} color={tokens.colors.onPrimary} strokeWidth={3} />
               )}
-            />
-
-            <Controller
-              control={control}
-              name="password"
-              render={({ field: { onChange, value } }) => (
-                <AppInput
-                  label="Password"
-                  secureTextEntry
-                  returnKeyType="done"
-                  placeholder="Minimum 6 characters"
-                  value={value}
-                  onChangeText={onChange}
-                  error={errors.password?.message}
-                  autoComplete="new-password"
-                  onSubmitEditing={handleSubmit(onSubmit)}
-                />
-              )}
-            />
-
-            <Text style={[styles.agreeText, { color: tokens.colors.onSurfaceMuted }]}>
-              By creating an account you agree to our{" "}
-              <Text
-                style={[styles.agreeLink, { color: tokens.colors.primary }]}
-                onPress={() => navigation.navigate("Terms")}
-              >
-                Terms
-              </Text>{" "}
-              and{" "}
-              <Text
-                style={[styles.agreeLink, { color: tokens.colors.primary }]}
-                onPress={() => navigation.navigate("Privacy")}
-              >
-                Privacy Policy
-              </Text>
-              .
+            </View>
+            <Text style={[styles.checkLabel, { color: tokens.colors.onSurfaceMuted }]}>
+              I accept Terms and Privacy
             </Text>
+          </Pressable>
 
-            <ActionButton
-              label={isSubmitting ? "Creating account..." : "Create account"}
-              disabled={isSubmitting}
-              loading={isSubmitting}
-              onPress={handleSubmit(onSubmit)}
-              size="large"
-            />
-          </View>
+          <ActionButton
+            label={isSubmitting ? "Signing up..." : "Sign Up"}
+            disabled={isSubmitting || !accepted}
+            loading={isSubmitting}
+            onPress={handleSubmit(onSubmit)}
+            size="large"
+          />
         </View>
 
-        {/* Login link */}
         <Pressable
           onPress={() => navigation.navigate("Login")}
-          style={styles.linkWrap}
+          style={styles.loginWrap}
           accessibilityRole="link"
-          accessibilityLabel="Go to login"
         >
-          <Text style={[styles.linkText, { color: tokens.colors.onSurfaceMuted }]}>
+          <Text style={[styles.loginText, { color: tokens.colors.onSurfaceMuted }]}>
             Already have an account?{" "}
-            <Text style={[styles.linkAccent, { color: tokens.colors.primary }]}>Sign in</Text>
+            <Text style={styles.loginAccent}>Login</Text>
           </Text>
         </Pressable>
       </ScrollView>
@@ -171,71 +198,50 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: {
     flexGrow: 1,
-    justifyContent: "center",
-    padding: 24,
-    gap: 24,
+    paddingHorizontal: 24,
+    paddingTop: 80,
+    paddingBottom: 40,
   },
-  logoWrap: {
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 8,
+  header: {
+    marginBottom: 28,
   },
-  logoBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  logoText: {
-    color: "#FFFFFF",
+  title: {
+    fontSize: 34,
     fontWeight: "800",
-    fontSize: 22,
-    letterSpacing: 1,
+    letterSpacing: -0.8,
+    marginBottom: 6,
   },
-  appName: {
-    fontSize: 26,
-    fontWeight: "800",
-    letterSpacing: -0.5,
-  },
-  appTagline: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  card: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 24,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
-  },
-  cardTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    letterSpacing: -0.3,
-    marginBottom: 4,
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 20,
+  subtitle: {
+    fontSize: 15,
   },
   form: {
     gap: 14,
   },
-  agreeText: { fontSize: 12, lineHeight: 18 },
-  agreeLink: { fontWeight: "600" },
-  linkWrap: {
+  checkRow: {
+    flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 8,
+    gap: 10,
+    marginTop: 2,
   },
-  linkText: {
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkLabel: {
     fontSize: 14,
   },
-  linkAccent: {
+  loginWrap: {
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  loginText: {
+    fontSize: 14,
+  },
+  loginAccent: {
     fontWeight: "700",
   },
 });

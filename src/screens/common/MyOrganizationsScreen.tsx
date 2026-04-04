@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { ChevronRight } from "lucide-react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useQuery } from "@tanstack/react-query";
 import { CommonStackParamList } from "../../navigation/types";
@@ -69,7 +70,7 @@ const OrgCard = React.memo(
           </Text>
         </View>
       </View>
-      <Text style={[styles.chevron, { color: tokens.colors.onSurfaceMuted }]}>›</Text>
+      <ChevronRight size={22} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
     </Pressable>
   )
 );
@@ -129,8 +130,8 @@ export const MyOrganizationsScreen = ({ navigation }: Props) => {
             ListFooterComponent={
               <ActionButton
                 variant="secondary"
-                label="Create organization"
-                onPress={() => navigation.navigate("CreateOrganization")}
+                label="Request organization"
+                onPress={() => navigation.navigate("RequestNewOrganization")}
                 style={styles.createButton}
               />
             }
@@ -142,8 +143,8 @@ export const MyOrganizationsScreen = ({ navigation }: Props) => {
               subtitle="Create a business organization to add venues and operators"
             />
             <ActionButton
-              label="Create organization"
-              onPress={() => navigation.navigate("CreateOrganization")}
+              label="Request organization"
+              onPress={() => navigation.navigate("RequestNewOrganization")}
               style={styles.createButton}
             />
           </>
@@ -179,6 +180,5 @@ const styles = StyleSheet.create({
   },
   roleText: { fontSize: 11, fontWeight: "700" },
   venueCount: { fontSize: 12 },
-  chevron: { fontSize: 24, fontWeight: "300", marginLeft: 8 },
   createButton: { marginTop: 8 },
 });

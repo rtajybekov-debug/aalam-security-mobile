@@ -1,5 +1,6 @@
 import React from "react";
 import { Platform, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { MapPin } from "lucide-react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useOperatorStore } from "../../stores/operatorStore";
 import { ActionButton } from "../../components/ui/ActionButton";
@@ -66,7 +67,7 @@ export const OperatorLiveMapScreen = ({ route }: Props) => {
     return (
       <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
         <View style={styles.center}>
-          <Text style={[styles.emptyIcon]}>📍</Text>
+          <MapPin size={48} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
           <Text style={[styles.errorTitle, { color: tokens.colors.onSurface }]}>No location yet</Text>
           <Text style={[styles.errorSub, { color: tokens.colors.onSurfaceMuted }]}>
             Waiting for the first coordinate from the user device.
@@ -152,7 +153,6 @@ const styles = StyleSheet.create({
   liveDot: { width: 10, height: 10, borderRadius: 5 },
   map: { flex: 1 },
   center: { flex: 1, justifyContent: "center", alignItems: "center", gap: 12, padding: 24 },
-  emptyIcon: { fontSize: 48, marginBottom: 4 },
   errorTitle: { fontSize: 17, fontWeight: "700", textAlign: "center" },
   errorSub: { fontSize: 13, textAlign: "center", lineHeight: 20 },
 });
