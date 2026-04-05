@@ -5,6 +5,8 @@ import { UserStackParamList } from "../../navigation/types";
 import { useAppTheme } from "../../theme";
 import { spacing } from "../../theme";
 import { ActionButton } from "../../components/ui/ActionButton";
+import { usersApi } from "../../api/modules/users";
+import { useAuthStore } from "../../stores/authStore";
 import { useUserSessionStore } from "../../stores/userSessionStore";
 import { toastBus } from "../../ui/feedback/toastBus";
 
@@ -36,6 +38,7 @@ export const UserBillingAddonsScreen = ({ route, navigation }: Props) => {
   const { tokens } = useAppTheme();
   const { planName, basePrice } = route.params;
   const setIndividualSubscription = useUserSessionStore((s) => s.setIndividualSubscription);
+  const setUser = useAuthStore((s) => s.setUser);
   const [selected, setSelected] = React.useState<Record<string, boolean>>({
     priority: true,
     family: true,
@@ -56,10 +59,24 @@ export const UserBillingAddonsScreen = ({ route, navigation }: Props) => {
     setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const [continuing, setContinuing] = React.useState(false);
+
   const onContinue = async () => {
-    await setIndividualSubscription(true);
-    toastBus.show({ message: "Individual subscription activated.", severity: "success" });
-    navigation.navigate("UserTabs");
+    setContinuing(true);
+    try {
+      const updated = await usersApi.demoActivateIndividualSubscription();
+      setUser(updated);
+      await setIndividualSubscription(true);
+      toastBus.show({ message: "Individual subscription activated.", severity: "success" });
+      navigation.navigate("UserTabs");
+    } catch {
+      toastBus.show({
+        message: "Could not activate plan. Check your connection and try again.",
+        severity: "error",
+      });
+    } finally {
+      setContinuing(false);
+    }
   };
 
   return (
@@ -111,7 +128,12 @@ export const UserBillingAddonsScreen = ({ route, navigation }: Props) => {
           <Text style={styles.totalHint}>Dynamic total updates as add-ons are toggled.</Text>
         </View>
 
-        <ActionButton label="Continue to payment" onPress={() => void onContinue()} />
+        <ActionButton
+          label={continuing ? "Saving..." : "Continue to payment"}
+          onPress={() => void onContinue()}
+          loading={continuing}
+          disabled={continuing}
+        />
       </ScrollView>
     </SafeAreaView>
   );

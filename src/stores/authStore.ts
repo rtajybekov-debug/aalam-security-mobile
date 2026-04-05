@@ -20,6 +20,7 @@ interface AuthState {
   refresh: () => Promise<boolean>;
   logout: () => Promise<void>;
   setTokens: (tokens: AuthTokens | null) => void;
+  setUser: (user: UserProfile) => void;
 }
 
 const toTokenState = (tokens: AuthTokens | null) => ({
@@ -152,5 +153,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       ...toTokenState(tokens),
       isAuthenticated: Boolean(tokens?.accessToken && get().user),
     });
+  },
+  setUser: (user: UserProfile) => {
+    void secureStorage.saveUser(user);
+    set({ user, role: user.role });
   },
 }));

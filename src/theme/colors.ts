@@ -104,4 +104,5 @@ export const semanticOledDarkColors = {
 
 /** For LinearGradient: [startColor, endColor] */
 export const oledDangerGradient = ["#F87171", "#EF4444"] as const;
-export const oledActiveGradient = ["#C8F53A", "#34D399"] as const;
+/** Active SOS session: warm amber→orange on black, distinct from danger red */
+export const oledActiveGradient = ["#FDE047", "#EA580C"] as const;

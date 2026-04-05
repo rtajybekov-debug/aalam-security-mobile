@@ -2,7 +2,16 @@ import React, { useCallback } from "react";
 import { CompositeScreenProps } from "@react-navigation/native";
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { FlatList, ListRenderItem, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  ListRenderItem,
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserTabBarBottomInset } from "../../navigation/userTabBarLayout";
 import { UserStackParamList, UserTabParamList } from "../../navigation/types";
@@ -83,6 +92,7 @@ export const UserEmergencyHistoryScreen = ({ navigation }: Props) => {
     limit: 20,
     fetcher: emergencyApi.getHistory,
   });
+  const { refetch, isRefetching } = query;
 
   const renderItem = useCallback<ListRenderItem<EmergencySession>>(
     ({ item }) => (
@@ -96,6 +106,19 @@ export const UserEmergencyHistoryScreen = ({ navigation }: Props) => {
   );
 
   const keyExtractor = useCallback((item: EmergencySession) => item.id, []);
+
+  const onRefresh = useCallback(() => {
+    void refetch();
+  }, [refetch]);
+
+  const refreshControl = (
+    <RefreshControl
+      refreshing={isRefetching}
+      onRefresh={onRefresh}
+      tintColor={tokens.colors.primary}
+      colors={[tokens.colors.primary]}
+    />
+  );
 
   const rootStyle = [styles.root, { backgroundColor: tokens.colors.background, paddingBottom: tabBarBottomInset }];
 
@@ -125,10 +148,16 @@ export const UserEmergencyHistoryScreen = ({ navigation }: Props) => {
   if (data.length === 0) {
     return (
       <SafeAreaView style={rootStyle}>
-        <EmptyState
-          title="No history yet"
-          subtitle="Resolved emergency sessions will appear here after your first incident."
-        />
+        <ScrollView
+          contentContainerStyle={styles.emptyScroll}
+          refreshControl={refreshControl}
+          showsVerticalScrollIndicator={false}
+        >
+          <EmptyState
+            title="No history yet"
+            subtitle="Resolved emergency sessions will appear here after your first incident."
+          />
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -148,6 +177,7 @@ export const UserEmergencyHistoryScreen = ({ navigation }: Props) => {
         keyExtractor={keyExtractor}
         contentContainerStyle={[styles.list, { paddingBottom: tabBarBottomInset }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={refreshControl}
         renderItem={renderItem}
         onEndReached={() => {
           if (query.hasNextPage && !query.isFetchingNextPage) {
@@ -162,6 +192,7 @@ export const UserEmergencyHistoryScreen = ({ navigation }: Props) => {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  emptyScroll: { flexGrow: 1 },
   pageHeader: { paddingHorizontal: spacing.lg, paddingBottom: spacing.sm, gap: 2 },
   pageTitle: { fontSize: 24, fontWeight: "700", letterSpacing: -0.3 },
   pageSubtitle: { fontSize: 13, fontWeight: "500" },

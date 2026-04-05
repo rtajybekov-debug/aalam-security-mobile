@@ -64,7 +64,8 @@ export const lightTokens: ThemeTokens = {
     ...semanticLightColors,
     category: categoryColorsLight,
     dangerGradient: lightDangerGradient,
-    activeGradient: ["#FF9F43", "#34D399"] as const,
+    /** Active session: amber → red, same family as idle SOS gradient */
+    activeGradient: ["#FBBF24", "#EF4444"] as const,
   },
   spacing,
   radius,

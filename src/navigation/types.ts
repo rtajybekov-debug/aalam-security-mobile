@@ -33,6 +33,8 @@ export type UserStackParamList = {
   UserTabs: undefined;
   UserActiveEmergency: { sessionId: string } | undefined;
   UserEmergencyDetails: { sessionId: string };
+  /** Overview for users with an organization membership (same visual language as Home). */
+  UserOrganization: undefined;
   UserBindVenue: undefined;
   UserSetupPin: undefined;
   UserEditDetails: undefined;

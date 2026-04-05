@@ -9,6 +9,7 @@ import { SetupPinScreen } from "../../screens/user/SetupPinScreen";
 import { UserEditDetailsScreen } from "../../screens/user/UserEditDetailsScreen";
 import { UserBillingPlansScreen } from "../../screens/user/UserBillingPlansScreen";
 import { UserBillingAddonsScreen } from "../../screens/user/UserBillingAddonsScreen";
+import { UserOrganizationScreen } from "../../screens/user/UserOrganizationScreen";
 import { appStackScreenOptions } from "../ui/AppStackShell";
 
 const Stack = createNativeStackNavigator<UserStackParamList>();
@@ -19,12 +20,17 @@ export const UserStack = () => (
     <Stack.Screen
       name="UserActiveEmergency"
       component={UserActiveEmergencyScreen}
-      options={{ title: "Active SOS" }}
+      options={{ headerShown: false }}
     />
     <Stack.Screen
       name="UserEmergencyDetails"
       component={UserEmergencyDetailsScreen}
       options={{ title: "Emergency Details" }}
+    />
+    <Stack.Screen
+      name="UserOrganization"
+      component={UserOrganizationScreen}
+      options={{ title: "Organization" }}
     />
     <Stack.Screen
       name="UserBindVenue"

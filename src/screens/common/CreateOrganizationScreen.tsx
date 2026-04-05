@@ -10,18 +10,49 @@ import {
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { z } from "zod";
 import { CommonStackParamList } from "../../navigation/types";
 import { AppInput } from "../../components/ui/AppInput";
 import { ActionButton } from "../../components/ui/ActionButton";
 import { useAppTheme } from "../../theme";
 import { spacing } from "../../theme";
+import { organizationApplicationApi } from "../../api/modules/organizationApplication";
 import { toastBus } from "../../ui/feedback/toastBus";
+import {
+  KYRGYZ_PHONE_HINT,
+  kyrgyzPhoneRequiredSchema,
+  sanitizeKyrgyzPhoneInput,
+} from "../../lib/kyrgyzPhone";
 
 type Props = NativeStackScreenProps<CommonStackParamList, "RequestNewOrganization">;
 type OrganizationType = "Corporate" | "Non-profit" | "Government";
 type BranchDraft = { id: string; name: string; address: string };
 
 const ORGANIZATION_TYPES: OrganizationType[] = ["Corporate", "Non-profit", "Government"];
+
+const organizationRequestSchema = z.object({
+  organizationName: z.string().trim().min(1, "Organization name is required"),
+  organizationType: z.enum(["Corporate", "Non-profit", "Government"]),
+  branches: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1, "Each branch needs a name"),
+        address: z.string().trim().min(1, "Each branch needs an address"),
+      }),
+    )
+    .min(1, "Add at least one branch"),
+  contactEmail: z
+    .string()
+    .trim()
+    .min(1, "Contact email is required")
+    .email("Enter a valid email")
+    .transform((s) => s.toLowerCase()),
+  contactPhone: kyrgyzPhoneRequiredSchema,
+  description: z.string().trim().optional(),
+  isAuthorized: z.boolean().refine((v) => v === true, {
+    message: "Confirm that you are authorized to represent this organization",
+  }),
+});
 
 export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
   const { tokens } = useAppTheme();
@@ -36,6 +67,7 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
   const [description, setDescription] = React.useState("");
   const [isAuthorized, setIsAuthorized] = React.useState(true);
   const [attachments, setAttachments] = React.useState<DocumentPicker.DocumentPickerAsset[]>([]);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const updateBranch = (id: string, field: "name" | "address", value: string) => {
     setBranches((prev) =>
@@ -100,6 +132,54 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
 
   const removeAttachment = (uri: string) => {
     setAttachments((prev) => prev.filter((asset) => asset.uri !== uri));
+  };
+
+  const onSubmit = async () => {
+    const parsed = organizationRequestSchema.safeParse({
+      organizationName,
+      organizationType,
+      branches: branches.map((b) => ({ name: b.name, address: b.address })),
+      contactEmail,
+      contactPhone: sanitizeKyrgyzPhoneInput(contactPhone),
+      description: description.trim() || undefined,
+      isAuthorized,
+    });
+
+    if (!parsed.success) {
+      const msg = parsed.error.issues[0]?.message ?? "Check the form and try again.";
+      toastBus.show({ message: msg, severity: "warning" });
+      return;
+    }
+
+    const d = parsed.data;
+    setIsSubmitting(true);
+    try {
+      await organizationApplicationApi.create({
+        organizationName: d.organizationName,
+        organizationType: d.organizationType,
+        branches: d.branches.map((b) => ({
+          name: b.name,
+          address: b.address,
+        })),
+        contactEmail: d.contactEmail,
+        contactPhone: d.contactPhone,
+        description: d.description,
+        attachments:
+          attachments.length > 0
+            ? attachments.map((a) => ({
+                fileName: a.name ?? "document",
+                mimeType: a.mimeType ?? "application/octet-stream",
+                sizeBytes: a.size ?? undefined,
+              }))
+            : undefined,
+      });
+      toastBus.show({ message: "Request submitted.", severity: "success" });
+      navigation.navigate("OrganizationRequestSubmitted");
+    } catch {
+      toastBus.show({ message: "Failed to submit request.", severity: "error" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -209,8 +289,11 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
         <AppInput
           label="Contact phone (required)"
           value={contactPhone}
-          onChangeText={setContactPhone}
+          onChangeText={(v) => setContactPhone(sanitizeKyrgyzPhoneInput(v))}
           keyboardType="phone-pad"
+          autoCapitalize="none"
+          autoCorrect={false}
+          hint={KYRGYZ_PHONE_HINT}
         />
 
         <View style={styles.descriptionBlock}>
@@ -265,9 +348,10 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
         </Pressable>
 
         <ActionButton
-          label="Submit Request"
-          onPress={() => navigation.navigate("OrganizationRequestSubmitted")}
-          disabled={!requiredDone}
+          label={isSubmitting ? "Submitting..." : "Submit Request"}
+          onPress={() => void onSubmit()}
+          disabled={!requiredDone || isSubmitting}
+          loading={isSubmitting}
           style={styles.submit}
         />
         <Text style={[styles.caption, { color: tokens.colors.onSurfaceMuted }]}>

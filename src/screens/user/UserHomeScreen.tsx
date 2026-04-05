@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUserTabBarBottomInset } from "../../navigation/userTabBarLayout";
 import { UserStackParamList, UserTabParamList } from "../../navigation/types";
+import { useAuthStore } from "../../stores/authStore";
 import { useUserSessionStore } from "../../stores/userSessionStore";
 import { useEmergencyStore } from "../../stores/emergencyStore";
 import { SosEmergencyButton } from "../../components/sos/SosEmergencyButton";
@@ -48,6 +49,7 @@ export const UserHomeScreen = ({ navigation }: Props) => {
   const currentVenueId = useUserSessionStore((state) => state.currentVenueId);
   const currentVenueName = useUserSessionStore((state) => state.currentVenueName);
   const hasIndividualSubscription = useUserSessionStore((state) => state.hasIndividualSubscription);
+  const profileUser = useAuthStore((state) => state.user);
   const activeSession = useEmergencyStore((state) => state.activeSession);
   const setActiveSession = useEmergencyStore((state) => state.setActiveSession);
   const { data: memberships = [] } = useQuery({
@@ -67,7 +69,9 @@ export const UserHomeScreen = ({ navigation }: Props) => {
     .flatMap((member) => member.organization.venues ?? [])
     .find((venue) => venue.id === currentVenueId);
   const hasAssignedVenue = Boolean(currentVenueId);
-  const canUseApp = hasIndividualSubscription || hasAssignedVenue;
+  const serverIndividual = Boolean(profileUser?.individualSubscriptionActive);
+  const canUseApp =
+    serverIndividual || hasIndividualSubscription || hasAssignedVenue;
   const inactiveReason = !hasOrganization && !hasIndividualSubscription ? "no_access" : "needs_assignment";
 
   const onStartSos = async () => {
@@ -143,6 +147,21 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                   : "You are in an organization, but SOS can only be triggered from your assigned branch."}
               </Text>
             </View>
+            {hasOrganization ? (
+              <Pressable
+                onPress={() => navigation.navigate("UserOrganization")}
+                style={[styles.venueDetailsRow, { borderColor: P.border, backgroundColor: P.card }]}
+                accessibilityRole="button"
+              >
+                <View style={styles.venueTextWrap}>
+                  <Text style={styles.venueTitle}>My organization</Text>
+                  <Text style={[styles.venueSub, { color: P.sessionMuted }]} numberOfLines={1}>
+                    {memberships[0]?.organization.name ?? "Branches & membership"}
+                  </Text>
+                </View>
+                <Text style={[styles.venueArrow, { color: "#C4F82A" }]}>→</Text>
+              </Pressable>
+            ) : null}
             <View style={styles.ctaStack}>
               <Pressable
                 onPress={() => navigation.navigate("UserBindVenue")}
@@ -195,6 +214,22 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                 </Text>
               ) : null}
             </View>
+
+            {hasOrganization ? (
+              <Pressable
+                onPress={() => navigation.navigate("UserOrganization")}
+                style={[styles.venueDetailsRow, { borderColor: P.border, backgroundColor: P.card }]}
+                accessibilityRole="button"
+              >
+                <View style={styles.venueTextWrap}>
+                  <Text style={styles.venueTitle}>My organization</Text>
+                  <Text style={[styles.venueSub, { color: P.sessionMuted }]} numberOfLines={1}>
+                    {memberships[0]?.organization.name ?? "View branches & role"}
+                  </Text>
+                </View>
+                <Text style={[styles.venueArrow, { color: "#C4F82A" }]}>→</Text>
+              </Pressable>
+            ) : null}
 
             <View style={styles.sosBlock}>
               <SosEmergencyButton state={buttonState} onTrigger={onStartSos} dashboardStyle />

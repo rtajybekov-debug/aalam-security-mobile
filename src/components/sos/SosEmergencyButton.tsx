@@ -37,13 +37,15 @@ const HOLD_MS = 1500;
 
 const BUTTON_SIZE = 210;
 const PULSE_SIZE = 250;
-const GLOW_SIZE = 240;
+const GLOW_SIZE = 250;
 
 /** Matches Pencil node 240pX / NiPGo — inner 152, ring 196 */
 const DASHBOARD_BUTTON = 152;
 const DASHBOARD_PULSE = 196;
 const DASHBOARD_GLOW = 184;
 const DASHBOARD_GRADIENT: [ColorValue, ColorValue] = ["#FF8852", "#EF4444"];
+/** Dashboard SOS active: brighter amber → deep orange (same line as idle orange→red) */
+const DASHBOARD_ACTIVE_GRADIENT: [ColorValue, ColorValue] = ["#FBBF24", "#EA580C"];
 
 export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) => {
   const theme = useAppTheme();
@@ -111,8 +113,13 @@ export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) 
   const isActive = state === "active";
   const isSending = state === "sending";
   const gradientColors: [ColorValue, ColorValue] = (() => {
-    if (dashboardStyle && !isActive) return DASHBOARD_GRADIENT;
-    if (isActive) return [theme.tokens.colors.warning, theme.tokens.status.IN_PROGRESS.border];
+    if (isActive) {
+      if (dashboardStyle) return DASHBOARD_ACTIVE_GRADIENT;
+      const ag = theme.tokens.colors.activeGradient;
+      if (ag) return [ag[0], ag[1]] as [ColorValue, ColorValue];
+      return [theme.tokens.colors.warning, "#EF4444"];
+    }
+    if (dashboardStyle) return DASHBOARD_GRADIENT;
     const dg = theme.tokens.colors.dangerGradient;
     if (dg) return dg as [ColorValue, ColorValue];
     return [theme.tokens.colors.danger, theme.tokens.status.NEW.border];
@@ -196,7 +203,13 @@ export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) 
         <Animated.View
           style={[
             styles.glow,
-            { width: glowSize, height: glowSize, borderRadius: glowSize / 2 },
+            {
+              width: glowSize,
+              height: glowSize,
+              borderRadius: glowSize / 2,
+              left: (btnSize - glowSize) / 2,
+              top: (btnSize - glowSize) / 2,
+            },
             { backgroundColor: isActive ? theme.tokens.colors.warning : theme.tokens.colors.danger },
             animatedGlow,
           ]}
@@ -221,20 +234,42 @@ export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) 
             setIsConfirmVisible(true);
           }}
           accessibilityRole="button"
-          accessibilityLabel="Emergency SOS button"
+          accessibilityLabel={isActive ? "SOS live, emergency session active" : "Emergency SOS button"}
           accessibilityHint="Long press for 1.5 seconds or confirm in dialog"
         >
           <LinearGradient
             colors={gradientColors}
             style={[styles.gradient, { borderRadius: btnSize / 2 }]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            start={isActive ? { x: 0.5, y: 0 } : { x: 0, y: 0 }}
+            end={isActive ? { x: 0.5, y: 1 } : { x: 1, y: 1 }}
           >
             {isSending ? (
               <ActivityIndicator color={labelOnGradient} />
+            ) : isActive ? (
+              <View style={styles.labelStack}>
+                <Text
+                  style={[
+                    styles.label,
+                    styles.labelActiveLine1,
+                    dashboardStyle && styles.labelDashboardActiveLine1,
+                    { color: labelOnGradient },
+                  ]}
+                >
+                  SOS
+                </Text>
+                <Text
+                  style={[
+                    styles.labelActiveLine2,
+                    dashboardStyle && styles.labelDashboardActiveLine2,
+                    { color: labelOnGradient },
+                  ]}
+                >
+                  LIVE
+                </Text>
+              </View>
             ) : (
               <Text style={[styles.label, dashboardStyle && styles.labelDashboard, { color: labelOnGradient }]}>
-                {state === "active" ? "SOS ACTIVE" : "SOS"}
+                SOS
               </Text>
             )}
             {!dashboardStyle ? (
@@ -314,9 +349,6 @@ const styles = StyleSheet.create({
   },
   glow: {
     position: "absolute",
-    width: GLOW_SIZE,
-    height: GLOW_SIZE,
-    borderRadius: 999,
   },
   button: {
     width: BUTTON_SIZE,
@@ -340,6 +372,33 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     fontSize: 32,
     letterSpacing: 1.2,
+  },
+  labelStack: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 0,
+  },
+  labelActiveLine1: {
+    fontSize: 30,
+    letterSpacing: 2,
+    lineHeight: 34,
+  },
+  labelDashboardActiveLine1: {
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: 1.5,
+  },
+  labelActiveLine2: {
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 3.2,
+    marginTop: 2,
+    opacity: 0.92,
+  },
+  labelDashboardActiveLine2: {
+    fontSize: 9,
+    letterSpacing: 2.4,
+    marginTop: 0,
   },
   labelDashboard: {
     fontSize: 34,

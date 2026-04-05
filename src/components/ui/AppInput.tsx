@@ -5,9 +5,11 @@ import { useAppTheme } from "../../theme";
 interface Props extends TextInputProps {
   label?: string;
   error?: string;
+  /** Shown under the field when there is no error (e.g. format hint). */
+  hint?: string;
 }
 
-export const AppInput = ({ label, error, style, placeholder, ...rest }: Props) => {
+export const AppInput = ({ label, error, hint, style, placeholder, ...rest }: Props) => {
   const { tokens } = useAppTheme();
   const [focused, setFocused] = React.useState(false);
 
@@ -35,6 +37,8 @@ export const AppInput = ({ label, error, style, placeholder, ...rest }: Props) =
       />
       {error ? (
         <Text style={[styles.error, { color: tokens.colors.danger }]}>{error}</Text>
+      ) : hint ? (
+        <Text style={[styles.hint, { color: tokens.colors.onSurfaceMuted }]}>{hint}</Text>
       ) : null}
     </View>
   );
@@ -55,5 +59,10 @@ const styles = StyleSheet.create({
   error: {
     fontSize: 12,
     marginTop: 2,
+  },
+  hint: {
+    fontSize: 12,
+    marginTop: 2,
+    lineHeight: 16,
   },
 });
