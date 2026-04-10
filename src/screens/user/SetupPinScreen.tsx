@@ -16,6 +16,7 @@ import { AppInput } from "../../components/ui/AppInput";
 import { ActionButton } from "../../components/ui/ActionButton";
 import { useUserSessionStore } from "../../stores/userSessionStore";
 import { toastBus } from "../../ui/feedback/toastBus";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<UserStackParamList, "UserSetupPin">;
 
@@ -30,7 +31,7 @@ export const SetupPinScreen = ({ navigation }: Props) => {
 
   const handleContinue = () => {
     if (pin.length !== 4) {
-      setError("Enter 4 digits");
+      setError(ru.setupPin.pinDigits);
       return;
     }
     setError(undefined);
@@ -40,22 +41,22 @@ export const SetupPinScreen = ({ navigation }: Props) => {
 
   const handleSave = async () => {
     if (confirmPin.length !== 4) {
-      setError("Enter 4 digits");
+      setError(ru.setupPin.pinDigits);
       return;
     }
     if (pin !== confirmPin) {
-      setError("PINs do not match");
+      setError(ru.setupPin.pinMismatch);
       return;
     }
     setError(undefined);
     setLoading(true);
     try {
       await setPin(pin);
-      toastBus.show({ message: "PIN saved", severity: "success" });
+      toastBus.show({ message: ru.setupPin.saved, severity: "success" });
       navigation.goBack();
     } catch {
-      toastBus.show({ message: "Failed to save PIN", severity: "error" });
-      setError("Failed to save");
+      toastBus.show({ message: ru.setupPin.failed, severity: "error" });
+      setError(ru.setupPin.saveFail);
     } finally {
       setLoading(false);
     }
@@ -79,15 +80,13 @@ export const SetupPinScreen = ({ navigation }: Props) => {
           showsVerticalScrollIndicator={false}
         >
           <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            {step === "enter"
-              ? "Add an extra security step to your account"
-              : "Re-enter your 4-digit code to confirm"}
+            {step === "enter" ? ru.setupPin.enterSub : ru.setupPin.confirmSub}
           </Text>
 
           {step === "enter" ? (
             <>
               <AppInput
-                label="PIN"
+                label={ru.setupPin.pin}
                 value={pin}
                 onChangeText={(t) => {
                   const digits = t.replace(/\D/g, "").slice(0, 4);
@@ -102,16 +101,16 @@ export const SetupPinScreen = ({ navigation }: Props) => {
                 editable={!loading}
               />
               <ActionButton
-                label="Enable 2FA"
+                label={ru.setupPin.enable2fa}
                 onPress={handleContinue}
                 disabled={pin.length !== 4}
-                accessibilityLabel="Continue to confirm PIN"
+                accessibilityLabel={ru.setupPin.continueA11y}
               />
             </>
           ) : (
             <>
               <AppInput
-                label="Confirm PIN"
+                label={ru.setupPin.confirmPin}
                 value={confirmPin}
                 onChangeText={(t) => {
                   const digits = t.replace(/\D/g, "").slice(0, 4);
@@ -128,18 +127,18 @@ export const SetupPinScreen = ({ navigation }: Props) => {
               <View style={styles.row}>
                 <ActionButton
                   variant="secondary"
-                  label="Back"
+                  label={ru.setupPin.back}
                   onPress={handleBack}
                   disabled={loading}
                   style={styles.half}
                 />
                 <ActionButton
-                  label="Enable 2FA"
+                  label={ru.setupPin.enable2fa}
                   onPress={handleSave}
                   loading={loading}
                   disabled={confirmPin.length !== 4}
                   style={styles.half}
-                  accessibilityLabel="Save PIN"
+                  accessibilityLabel={ru.setupPin.saveA11y}
                 />
               </View>
             </>

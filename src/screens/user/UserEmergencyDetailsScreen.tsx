@@ -10,6 +10,7 @@ import { AppCard } from "../../components/ui/AppCard";
 import { Divider } from "../../components/ui/Divider";
 import { useAppTheme } from "../../theme";
 import { spacing } from "../../theme";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<UserStackParamList, "UserEmergencyDetails">;
 
@@ -37,10 +38,15 @@ export const UserEmergencyDetailsScreen = ({ route }: Props) => {
     fetcher: emergencyApi.getHistory,
   });
 
-  if (query.isLoading) return <LoadingState label="Loading details..." />;
+  if (query.isLoading) return <LoadingState label={ru.emergencyDetails.loading} />;
   if (query.isError) {
     return (
-      <ErrorState title="Failed to load details" onRetry={() => void query.refetch()} />
+      <ErrorState
+        title={ru.emergencyDetails.loadFail}
+        message={ru.emergencyHistory.loadErrorMsg}
+        retryLabel={ru.emergencyDetails.retry}
+        onRetry={() => void query.refetch()}
+      />
     );
   }
 
@@ -52,7 +58,7 @@ export const UserEmergencyDetailsScreen = ({ route }: Props) => {
       <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
         <View style={styles.center}>
           <Text style={[styles.notFound, { color: tokens.colors.onSurfaceMuted }]}>
-            Session not found.
+            {ru.emergencyDetails.notFound}
           </Text>
         </View>
       </SafeAreaView>
@@ -76,13 +82,24 @@ export const UserEmergencyDetailsScreen = ({ route }: Props) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.pageTitle, { color: tokens.colors.onSurface }]}>Detail</Text>
+        <Text style={[styles.pageTitle, { color: tokens.colors.onSurface }]}>
+          {ru.emergencyDetails.pageTitle}
+        </Text>
 
         <AppCard style={styles.summaryCard}>
-          <Text style={[styles.sectionTitle, { color: tokens.colors.onSurface }]}>Session Summary</Text>
-          <InfoRow label="Date" value={createdStr} tokens={tokens} />
-          <InfoRow label="Duration" value={item.closedAt ? "Closed" : "Active"} tokens={tokens} />
-          <Text style={styles.statusText}>Status: {item.status}</Text>
+          <Text style={[styles.sectionTitle, { color: tokens.colors.onSurface }]}>
+            {ru.emergencyDetails.summary}
+          </Text>
+          <InfoRow label={ru.emergencyDetails.date} value={createdStr} tokens={tokens} />
+          <InfoRow
+            label={ru.emergencyDetails.duration}
+            value={item.closedAt ? ru.emergencyDetails.closed : ru.emergencyDetails.active}
+            tokens={tokens}
+          />
+          <Text style={styles.statusText}>
+            {ru.emergencyDetails.statusPrefix}
+            {ru.emergencyStatus[item.status as keyof typeof ru.emergencyStatus] ?? item.status}
+          </Text>
         </AppCard>
 
         <AppCard style={styles.mapCard}>
@@ -93,21 +110,33 @@ export const UserEmergencyDetailsScreen = ({ route }: Props) => {
           </View>
         </AppCard>
 
-        <Text style={[styles.timelineTitle, { color: tokens.colors.onSurface }]}>Event timeline</Text>
+        <Text style={[styles.timelineTitle, { color: tokens.colors.onSurface }]}>
+          {ru.emergencyDetails.timeline}
+        </Text>
         <View style={styles.timelineList}>
-          <Text style={[styles.timelineItem, { color: tokens.colors.onSurfaceMuted }]}>• Created - {createdStr}</Text>
-          <Text style={[styles.timelineItem, { color: tokens.colors.onSurfaceMuted }]}>• Assigned - dispatch assigned</Text>
-          <Text style={[styles.timelineItem, { color: tokens.colors.onSurfaceMuted }]}>• In progress - operator on site</Text>
-          <Text style={[styles.timelineItem, { color: tokens.colors.onSurfaceMuted }]}>• Closed - {closedStr}</Text>
+          <Text style={[styles.timelineItem, { color: tokens.colors.onSurfaceMuted }]}>
+            {ru.emergencyDetails.tlCreated}
+            {createdStr}
+          </Text>
+          <Text style={[styles.timelineItem, { color: tokens.colors.onSurfaceMuted }]}>
+            {ru.emergencyDetails.tlAssigned}
+          </Text>
+          <Text style={[styles.timelineItem, { color: tokens.colors.onSurfaceMuted }]}>
+            {ru.emergencyDetails.tlProgress}
+          </Text>
+          <Text style={[styles.timelineItem, { color: tokens.colors.onSurfaceMuted }]}>
+            {ru.emergencyDetails.tlClosed}
+            {closedStr}
+          </Text>
         </View>
 
         <AppCard>
-          <Text style={[styles.sectionTitle, { color: tokens.colors.onSurface }]}>Assigned response team</Text>
+          <Text style={[styles.sectionTitle, { color: tokens.colors.onSurface }]}>{ru.emergencyDetails.team}</Text>
           <Text style={[styles.resolutionText, { color: tokens.colors.onSurfaceMuted }]}>
-            {item.resolution ?? "Response operator handled and completed the incident."}
+            {item.resolution ?? ru.emergencyDetails.defaultResolution}
           </Text>
           <Divider style={styles.divider} />
-          <Text style={[styles.contact, { color: tokens.colors.primary }]}>Contact: +1 (555) 010-2281</Text>
+          <Text style={[styles.contact, { color: tokens.colors.primary }]}>{ru.emergencyDetails.contact}</Text>
         </AppCard>
       </ScrollView>
     </SafeAreaView>

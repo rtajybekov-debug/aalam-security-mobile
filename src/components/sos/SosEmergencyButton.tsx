@@ -23,6 +23,7 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 export type SosButtonState = "idle" | "sending" | "active" | "disabled";
 
@@ -124,10 +125,12 @@ export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) 
     if (dg) return dg as [ColorValue, ColorValue];
     return [theme.tokens.colors.danger, theme.tokens.status.NEW.border];
   })();
-  const contextTitle = isActive ? "SOS already active" : isSending ? "Sending alert..." : "Emergency SOS";
-  const contextDescription = isActive
-    ? "Help is being notified. Open active session for updates."
-    : "Hold the button for 1.5s to send an emergency alert.";
+  const contextTitle = isActive
+    ? ru.sos.activeTitle
+    : isSending
+      ? ru.sos.sendingAlert
+      : ru.sos.emergencyTitle;
+  const contextDescription = isActive ? ru.sos.activeHint : ru.sos.emergencyHint;
 
   const btnSize = dashboardStyle ? DASHBOARD_BUTTON : BUTTON_SIZE;
   const pulseSize = dashboardStyle ? DASHBOARD_PULSE : PULSE_SIZE;
@@ -141,7 +144,7 @@ export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) 
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      throw new Error("SOS trigger failed");
+      throw new Error(ru.sos.triggerFail);
     }
   };
 
@@ -234,8 +237,8 @@ export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) 
             setIsConfirmVisible(true);
           }}
           accessibilityRole="button"
-          accessibilityLabel={isActive ? "SOS live, emergency session active" : "Emergency SOS button"}
-          accessibilityHint="Long press for 1.5 seconds or confirm in dialog"
+          accessibilityLabel={isActive ? ru.sos.a11yActive : ru.sos.a11yButton}
+          accessibilityHint={ru.sos.a11yHint}
         >
           <LinearGradient
             colors={gradientColors}
@@ -264,7 +267,7 @@ export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) 
                     { color: labelOnGradient },
                   ]}
                 >
-                  LIVE
+                  {ru.sos.live}
                 </Text>
               </View>
             ) : (
@@ -274,7 +277,7 @@ export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) 
             )}
             {!dashboardStyle ? (
               <Text style={[styles.helper, { color: theme.tokens.colors.onDanger }]}>
-                {isActive ? "Tap to open session" : "Hold 1.5s to trigger"}
+                {isActive ? ru.sos.tapSession : ru.sos.holdHint}
               </Text>
             ) : null}
           </LinearGradient>
@@ -296,19 +299,19 @@ export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) 
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, { backgroundColor: theme.tokens.colors.surface, borderColor: theme.tokens.colors.border }]}>
-            <Text style={[styles.modalTitle, { color: theme.tokens.colors.onSurface }]}>Confirm emergency alert</Text>
+            <Text style={[styles.modalTitle, { color: theme.tokens.colors.onSurface }]}>{ru.sos.confirmTitle}</Text>
             <Text style={[styles.modalBody, { color: theme.tokens.colors.onSurfaceMuted }]}>
-              This will immediately notify operators and start live status tracking.
+              {ru.sos.confirmBody}
             </Text>
             <View style={styles.modalActions}>
               <Pressable
                 onPress={() => setIsConfirmVisible(false)}
                 style={styles.modalSecondary}
                 accessibilityRole="button"
-                accessibilityLabel="Cancel emergency confirmation"
+                accessibilityLabel={ru.sos.a11yCancel}
               >
                 <Text style={[styles.modalSecondaryText, { color: theme.tokens.colors.onSurfaceMuted }]}>
-                  Cancel
+                  {ru.sos.cancel}
                 </Text>
               </Pressable>
               <Pressable
@@ -318,10 +321,10 @@ export const SosEmergencyButton = ({ state, onTrigger, dashboardStyle }: Props) 
                 }}
                 style={[styles.modalDanger, { backgroundColor: theme.tokens.colors.danger }]}
                 accessibilityRole="button"
-                accessibilityLabel="Confirm emergency trigger"
-                accessibilityHint="Immediately sends SOS alert"
+                accessibilityLabel={ru.sos.a11yConfirm}
+                accessibilityHint={ru.sos.a11yConfirmHint}
               >
-                <Text style={[styles.modalDangerText, { color: theme.tokens.colors.onDanger }]}>Send SOS</Text>
+                <Text style={[styles.modalDangerText, { color: theme.tokens.colors.onDanger }]}>{ru.sos.sendSos}</Text>
               </Pressable>
             </View>
           </View>

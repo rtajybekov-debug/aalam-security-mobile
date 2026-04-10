@@ -14,6 +14,7 @@ import { useUserTabBarBottomInset } from "../../navigation/userTabBarLayout";
 import { UserTabParamList, UserStackParamList } from "../../navigation/types";
 import { useAppTheme } from "../../theme";
 import { spacing } from "../../theme";
+import { ru } from "../../locale/ru";
 
 type Nav = CompositeNavigationProp<
   BottomTabNavigationProp<UserTabParamList, "Profile">,
@@ -21,9 +22,9 @@ type Nav = CompositeNavigationProp<
 >;
 
 const ROLE_LABELS: Record<string, string> = {
-  USER: "End User",
-  OPERATOR: "Operator",
-  ADMIN: "Administrator",
+  USER: ru.roles.endUser,
+  OPERATOR: ru.roles.operator,
+  ADMIN: ru.roles.admin,
 };
 
 export const UserProfileScreen = () => {
@@ -55,7 +56,7 @@ export const UserProfileScreen = () => {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.pageTitle, { color: tokens.colors.onSurface }]}>My profile</Text>
+        <Text style={[styles.pageTitle, { color: tokens.colors.onSurface }]}>{ru.profileUser.pageTitle}</Text>
 
         <AppCard style={styles.avatarSection}>
           <Avatar name={user?.email} size={80} />
@@ -78,28 +79,32 @@ export const UserProfileScreen = () => {
             style={[styles.editAction, { borderColor: tokens.colors.border, backgroundColor: tokens.colors.surface }]}
             onPress={() => stackNav?.navigate("UserEditDetails")}
           >
-            <Text style={[styles.editText, { color: tokens.colors.primary }]}>Edit</Text>
+            <Text style={[styles.editText, { color: tokens.colors.primary }]}>{ru.profileUser.edit}</Text>
           </Pressable>
         </AppCard>
 
-        <Text style={[styles.sectionTitle, { color: tokens.colors.onSurface }]}>Security settings</Text>
+        <Text style={[styles.sectionTitle, { color: tokens.colors.onSurface }]}>
+          {ru.profileUser.securitySettings}
+        </Text>
         <AppCard style={styles.settingGroup}>
           <Pressable style={styles.settingRow} onPress={() => stackNav?.navigate("UserBindVenue")}>
             <Text style={[styles.settingLabel, { color: tokens.colors.onSurface }]}>
-              {currentVenueName ? `Venue: ${currentVenueName}` : "Join Venue"}
+              {currentVenueName
+                ? `${ru.profileUser.venuePrefix}${currentVenueName}`
+                : ru.profileUser.joinVenue}
             </Text>
             <ChevronRight size={18} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
           </Pressable>
           <View style={[styles.rowDivider, { backgroundColor: tokens.colors.border }]} />
           <Pressable style={styles.settingRow} onPress={() => stackNav?.navigate("UserSetupPin")}>
             <Text style={[styles.settingLabel, { color: tokens.colors.onSurface }]}>
-              {userPin ? "PIN set" : "Set PIN"}
+              {userPin ? ru.profileUser.pinSet : ru.profileUser.setPin}
             </Text>
             <ChevronRight size={18} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
           </Pressable>
           <View style={[styles.rowDivider, { backgroundColor: tokens.colors.border }]} />
           <Pressable style={styles.settingRow} onPress={() => stackNav?.navigate("UserBillingPlans")}>
-            <Text style={[styles.settingLabel, { color: tokens.colors.onSurface }]}>Billing</Text>
+            <Text style={[styles.settingLabel, { color: tokens.colors.onSurface }]}>{ru.profileUser.billing}</Text>
             <ChevronRight size={18} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
           </Pressable>
           <View style={[styles.rowDivider, { backgroundColor: tokens.colors.border }]} />
@@ -108,7 +113,7 @@ export const UserProfileScreen = () => {
             onPress={() => (rootNav as any)?.navigate("Common", { screen: "RequestNewOrganization" })}
           >
             <Text style={[styles.settingLabel, { color: tokens.colors.onSurface }]}>
-              Request organization
+              {ru.profileUser.requestOrg}
             </Text>
             <ChevronRight size={18} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
           </Pressable>
@@ -116,16 +121,16 @@ export const UserProfileScreen = () => {
 
         <View style={styles.linksRow}>
           <Pressable onPress={() => (rootNav as any)?.navigate("Common", { screen: "Terms" })}>
-            <Text style={[styles.linkText, { color: tokens.colors.onSurfaceMuted }]}>Terms of Service</Text>
+            <Text style={[styles.linkText, { color: tokens.colors.onSurfaceMuted }]}>{ru.profileUser.terms}</Text>
           </Pressable>
           <Text style={[styles.dot, { color: tokens.colors.border }]}>·</Text>
           <Pressable onPress={() => (rootNav as any)?.navigate("Common", { screen: "Privacy" })}>
-            <Text style={[styles.linkText, { color: tokens.colors.onSurfaceMuted }]}>Privacy Policy</Text>
+            <Text style={[styles.linkText, { color: tokens.colors.onSurfaceMuted }]}>{ru.profileUser.privacy}</Text>
           </Pressable>
         </View>
 
         <Pressable style={[styles.logoutButton, { backgroundColor: "#3F1D1D" }]} onPress={() => void logout()}>
-          <Text style={[styles.logoutText, { color: "#FCA5A5" }]}>Logout</Text>
+          <Text style={[styles.logoutText, { color: "#FCA5A5" }]}>{ru.profileUser.logout}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>

@@ -9,6 +9,7 @@ import { usersApi } from "../../api/modules/users";
 import { useAuthStore } from "../../stores/authStore";
 import { useUserSessionStore } from "../../stores/userSessionStore";
 import { toastBus } from "../../ui/feedback/toastBus";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<UserStackParamList, "UserBillingAddons">;
 
@@ -22,14 +23,14 @@ type AddOn = {
 const ADD_ONS: AddOn[] = [
   {
     id: "priority",
-    title: "Priority dispatch lane",
-    description: "Faster operator assignment during high-load periods.",
+    title: ru.billing.addonPriority,
+    description: ru.billing.addonPrioritySub,
     monthlyPrice: 300,
   },
   {
     id: "family",
-    title: "Family extension",
-    description: "Cover up to 3 additional family members.",
+    title: ru.billing.addonFamily,
+    description: ru.billing.addonFamilySub,
     monthlyPrice: 200,
   },
 ];
@@ -67,11 +68,11 @@ export const UserBillingAddonsScreen = ({ route, navigation }: Props) => {
       const updated = await usersApi.demoActivateIndividualSubscription();
       setUser(updated);
       await setIndividualSubscription(true);
-      toastBus.show({ message: "Individual subscription activated.", severity: "success" });
+      toastBus.show({ message: ru.billing.activated, severity: "success" });
       navigation.navigate("UserTabs");
     } catch {
       toastBus.show({
-        message: "Could not activate plan. Check your connection and try again.",
+        message: ru.billing.activateFail,
         severity: "error",
       });
     } finally {
@@ -86,12 +87,15 @@ export const UserBillingAddonsScreen = ({ route, navigation }: Props) => {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Customize Your Plan</Text>
+        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.billing.customizeTitle}</Text>
 
         <View style={[styles.selectedPlanCard, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border }]}>
-          <Text style={[styles.selectedPlan, { color: tokens.colors.onSurface }]}>Selected plan: {planName}</Text>
+          <Text style={[styles.selectedPlan, { color: tokens.colors.onSurface }]}>
+            {ru.billing.selectedPlan} {planName}
+          </Text>
           <Text style={[styles.basePrice, { color: tokens.colors.onSurfaceMuted }]}>
-            Base price: {basePrice} c / month
+            {ru.billing.basePrice} {basePrice}
+            {ru.billing.currencySuffix} / {ru.billing.perMonth}
           </Text>
         </View>
 
@@ -116,20 +120,26 @@ export const UserBillingAddonsScreen = ({ route, navigation }: Props) => {
                   </View>
                 </View>
                 <Text style={[styles.addOnDesc, { color: tokens.colors.onSurfaceMuted }]}>{addOn.description}</Text>
-                <Text style={[styles.addOnPrice, { color: "#C4F82A" }]}>+{addOn.monthlyPrice} c / month</Text>
+                <Text style={[styles.addOnPrice, { color: "#C4F82A" }]}>
+                  +{addOn.monthlyPrice}
+                  {ru.billing.currencySuffix} / {ru.billing.perMonth}
+                </Text>
               </Pressable>
             );
           })}
         </View>
 
         <View style={styles.totalCard}>
-          <Text style={styles.totalLabel}>Total (monthly)</Text>
-          <Text style={styles.totalValue}>{total} c</Text>
-          <Text style={styles.totalHint}>Dynamic total updates as add-ons are toggled.</Text>
+          <Text style={styles.totalLabel}>{ru.billing.totalMonthly}</Text>
+          <Text style={styles.totalValue}>
+            {total}
+            {ru.billing.currencySuffix}
+          </Text>
+          <Text style={styles.totalHint}>{ru.billing.totalHint}</Text>
         </View>
 
         <ActionButton
-          label={continuing ? "Saving..." : "Continue to payment"}
+          label={continuing ? ru.billing.saving : ru.billing.continuePay}
           onPress={() => void onContinue()}
           loading={continuing}
           disabled={continuing}

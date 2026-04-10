@@ -18,10 +18,11 @@ import { AppInput } from "../../components/ui/AppInput";
 import { ActionButton } from "../../components/ui/ActionButton";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 const schema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email(ru.validation.emailInvalid),
+  password: z.string().min(6, ru.validation.passwordMin),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -42,9 +43,9 @@ export const LoginScreen = ({ navigation }: Props) => {
   const onSubmit = async (values: FormValues) => {
     try {
       await login(values.email, values.password);
-      toastBus.show({ message: "Signed in successfully.", severity: "success" });
+      toastBus.show({ message: ru.auth.signedInOk, severity: "success" });
     } catch {
-      toastBus.show({ message: "Invalid email or password.", severity: "error" });
+      toastBus.show({ message: ru.auth.invalidCredentials, severity: "error" });
     }
   };
 
@@ -59,9 +60,9 @@ export const LoginScreen = ({ navigation }: Props) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Welcome back</Text>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.auth.welcomeBack}</Text>
           <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Sign in to continue
+            {ru.auth.signInSubtitle}
           </Text>
         </View>
 
@@ -71,7 +72,7 @@ export const LoginScreen = ({ navigation }: Props) => {
             name="email"
             render={({ field: { onChange, value } }) => (
               <AppInput
-                label="Email"
+                label={ru.auth.email}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 returnKeyType="next"
@@ -88,7 +89,7 @@ export const LoginScreen = ({ navigation }: Props) => {
             name="password"
             render={({ field: { onChange, value } }) => (
               <AppInput
-                label="Password"
+                label={ru.auth.password}
                 secureTextEntry
                 returnKeyType="done"
                 value={value}
@@ -106,12 +107,12 @@ export const LoginScreen = ({ navigation }: Props) => {
             accessibilityRole="link"
           >
             <Text style={[styles.forgotText, { color: tokens.colors.primary }]}>
-              Forgot password?
+              {ru.auth.forgotPassword}
             </Text>
           </Pressable>
 
           <ActionButton
-            label={isSubmitting ? "Signing in..." : "Login"}
+            label={isSubmitting ? ru.auth.signingIn : ru.auth.login}
             disabled={isSubmitting}
             loading={isSubmitting}
             onPress={handleSubmit(onSubmit)}
@@ -120,7 +121,7 @@ export const LoginScreen = ({ navigation }: Props) => {
 
           <ActionButton
             variant="secondary"
-            label="Register"
+            label={ru.auth.register}
             onPress={() => navigation.navigate("Register")}
             size="large"
           />
@@ -135,14 +136,14 @@ export const LoginScreen = ({ navigation }: Props) => {
               style={[styles.legalLink, { color: tokens.colors.onSurfaceMuted }]}
               onPress={() => navigation.navigate("Terms")}
             >
-              Terms
+              {ru.auth.terms}
             </Text>
             <Text style={[styles.legalDot, { color: tokens.colors.onSurfaceMuted }]}>·</Text>
             <Text
               style={[styles.legalLink, { color: tokens.colors.onSurfaceMuted }]}
               onPress={() => navigation.navigate("Privacy")}
             >
-              Privacy
+              {ru.auth.privacy}
             </Text>
           </Pressable>
         </View>

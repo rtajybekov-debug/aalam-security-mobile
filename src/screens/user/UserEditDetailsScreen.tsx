@@ -19,9 +19,10 @@ import {
   sanitizeKyrgyzPhoneInput,
 } from "../../lib/kyrgyzPhone";
 import type { UpdateUserMePayload } from "../../types/user";
+import { ru } from "../../locale/ru";
 
 const schema = z.object({
-  displayName: z.string().trim().min(1, "Name is required"),
+  displayName: z.string().trim().min(1, ru.validation.nameRequired),
   phone: kyrgyzPhoneOptionalSchema,
 });
 
@@ -62,10 +63,10 @@ export const UserEditDetailsScreen = ({ navigation }: Props) => {
       };
       const updated = await usersApi.patchMe(payload);
       setUser(updated);
-      toastBus.show({ message: "Profile details updated.", severity: "success" });
+      toastBus.show({ message: ru.editDetails.saved, severity: "success" });
       navigation.goBack();
     } catch {
-      toastBus.show({ message: "Failed to save profile details.", severity: "error" });
+      toastBus.show({ message: ru.editDetails.failed, severity: "error" });
     }
   };
 
@@ -80,14 +81,14 @@ export const UserEditDetailsScreen = ({ navigation }: Props) => {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.content}
         >
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Edit details</Text>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.editDetails.screenTitle}</Text>
 
           <Controller
             control={control}
             name="displayName"
             render={({ field: { onChange, value } }) => (
               <AppInput
-                label="Name"
+                label={ru.editDetails.name}
                 value={value}
                 onChangeText={onChange}
                 autoCapitalize="words"
@@ -98,7 +99,7 @@ export const UserEditDetailsScreen = ({ navigation }: Props) => {
             )}
           />
           <AppInput
-            label="Email (read-only)"
+            label={ru.editDetails.emailReadonly}
             value={user?.email ?? ""}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -110,7 +111,7 @@ export const UserEditDetailsScreen = ({ navigation }: Props) => {
             name="phone"
             render={({ field: { onChange, value } }) => (
               <AppInput
-                label="Phone (optional)"
+                label={ru.editDetails.phone}
                 value={value}
                 onChangeText={(v) => onChange(sanitizeKyrgyzPhoneInput(v))}
                 keyboardType="phone-pad"
@@ -124,11 +125,11 @@ export const UserEditDetailsScreen = ({ navigation }: Props) => {
           />
 
           <ActionButton
-            label="Save changes"
+            label={ru.editDetails.save}
             onPress={() => void handleSubmit(onSubmit)()}
             loading={isSubmitting}
             disabled={isSubmitting}
-            accessibilityLabel="Save profile details"
+            accessibilityLabel={ru.editDetails.saveA11y}
           />
         </ScrollView>
       </KeyboardAvoidingView>

@@ -8,6 +8,7 @@ import {
   Hospital,
   LifeBuoy,
 } from "lucide-react-native";
+import { ru } from "../../locale/ru";
 import { useAppTheme } from "../../theme";
 import { radius, spacing } from "../../theme";
 
@@ -20,12 +21,12 @@ export type EmergencyCategory =
   | "rescue";
 
 const CATEGORY_LABELS: Record<EmergencyCategory, string> = {
-  medical: "Medical",
-  fire: "Fire",
-  natural: "Natural disaster",
-  accident: "Accident",
-  violence: "Violence",
-  rescue: "Rescue",
+  medical: ru.category.medical,
+  fire: ru.category.fire,
+  natural: ru.category.natural,
+  accident: ru.category.accident,
+  violence: ru.category.violence,
+  rescue: ru.category.rescue,
 };
 
 const CATEGORY_ICON: Record<

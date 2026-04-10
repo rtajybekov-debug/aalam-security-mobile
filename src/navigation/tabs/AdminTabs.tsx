@@ -4,6 +4,7 @@ import { Settings } from "lucide-react-native";
 import { AdminTabParamList } from "../types";
 import { AdminHomeScreen } from "../../screens/admin/AdminHomeScreen";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 const Tab = createBottomTabNavigator<AdminTabParamList>();
 
@@ -34,11 +35,11 @@ export const AdminTabs = () => {
         name="Home"
         component={AdminHomeScreen}
         options={{
-          tabBarLabel: "Admin",
+          tabBarLabel: ru.adminTab.label,
           tabBarIcon: ({ color, size }) => (
             <Settings size={size ?? 22} color={color} strokeWidth={2} />
           ),
-          tabBarAccessibilityLabel: "Admin home",
+          tabBarAccessibilityLabel: ru.adminTab.a11y,
         }}
       />
     </Tab.Navigator>

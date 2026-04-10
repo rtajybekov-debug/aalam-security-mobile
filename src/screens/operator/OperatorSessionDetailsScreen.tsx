@@ -10,6 +10,7 @@ import { ActionButton } from "../../components/ui/ActionButton";
 import { Divider } from "../../components/ui/Divider";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<OperatorStackParamList, "OperatorSessionDetails">;
 
@@ -39,9 +40,9 @@ export const OperatorSessionDetailsScreen = ({ route, navigation }: Props) => {
     try {
       setIsMutating(true);
       await handler();
-      toastBus.show({ message: "Session updated.", severity: "success" });
+      toastBus.show({ message: ru.operator.updated, severity: "success" });
     } catch {
-      toastBus.show({ message: "Failed to update session.", severity: "error" });
+      toastBus.show({ message: ru.operator.updateFail, severity: "error" });
     } finally {
       setIsMutating(false);
     }
@@ -52,9 +53,13 @@ export const OperatorSessionDetailsScreen = ({ route, navigation }: Props) => {
       <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
         <View style={styles.center}>
           <Text style={[styles.emptyText, { color: tokens.colors.onSurfaceMuted }]}>
-            No session selected.
+            {ru.operatorScreens.noSessionSelected}
           </Text>
-          <ActionButton variant="secondary" label="Go back" onPress={() => navigation.goBack()} />
+          <ActionButton
+            variant="secondary"
+            label={ru.operatorScreens.sessionBack}
+            onPress={() => navigation.goBack()}
+          />
         </View>
       </SafeAreaView>
     );
@@ -65,21 +70,23 @@ export const OperatorSessionDetailsScreen = ({ route, navigation }: Props) => {
       <View style={styles.content}>
         {/* Title row */}
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Session Details</Text>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>
+            {ru.operatorScreens.sessionDetailsTitle}
+          </Text>
           <StatusChip status={session.status} />
         </View>
 
         {/* Session info */}
         <AppCard>
           <Text style={[styles.sectionLabel, { color: tokens.colors.onSurfaceMuted }]}>
-            INFO
+            {ru.operatorScreens.infoSection}
           </Text>
-          <InfoRow label="Session ID" value={`#${session.id.slice(0, 8)}…`} tokens={tokens} />
+          <InfoRow label={ru.operatorScreens.sessionId} value={`#${session.id.slice(0, 8)}…`} tokens={tokens} />
           <Divider style={styles.divider} />
-          <InfoRow label="User" value={session.user?.email ?? "—"} tokens={tokens} />
+          <InfoRow label={ru.operatorScreens.user} value={session.user?.email ?? "—"} tokens={tokens} />
           <Divider style={styles.divider} />
           <InfoRow
-            label="Created"
+            label={ru.operatorScreens.created}
             value={new Date(session.createdAt).toLocaleString(undefined, {
               dateStyle: "medium",
               timeStyle: "short",
@@ -91,11 +98,11 @@ export const OperatorSessionDetailsScreen = ({ route, navigation }: Props) => {
         {/* Actions */}
         <AppCard>
           <Text style={[styles.sectionLabel, { color: tokens.colors.onSurfaceMuted }]}>
-            ACTIONS
+            {ru.operatorScreens.actionsSection}
           </Text>
           <View style={styles.actionsGrid}>
             <ActionButton
-              label="Start Progress"
+              label={ru.operatorScreens.startProgress}
               loading={isMutating}
               disabled={isMutating || session.status !== "ASSIGNED"}
               variant="secondary"
@@ -105,19 +112,19 @@ export const OperatorSessionDetailsScreen = ({ route, navigation }: Props) => {
                   setSelected(updated);
                 })
               }
-              accessibilityLabel="Start progress"
+              accessibilityLabel={ru.operatorScreens.startProgressA11y}
             />
             <ActionButton
               variant="secondary"
-              label="View Live Map"
+              label={ru.operatorScreens.liveMap}
               onPress={() => navigation.navigate("OperatorLiveMap", { sessionId: session.id })}
             />
             <ActionButton
               variant="danger"
-              label="Resolve Session"
+              label={ru.operatorScreens.resolveSession}
               disabled={isMutating}
               onPress={() => navigation.navigate("OperatorResolveModal", { sessionId: session.id })}
-              accessibilityLabel="Resolve emergency session"
+              accessibilityLabel={ru.operatorScreens.resolveSessionA11y}
             />
           </View>
         </AppCard>

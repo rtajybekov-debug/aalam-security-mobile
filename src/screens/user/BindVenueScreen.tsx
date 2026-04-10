@@ -19,6 +19,7 @@ import { venueApi } from "../../api/modules/organization";
 import { useUserSessionStore } from "../../stores/userSessionStore";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { BackNavLink } from "../../components/navigation/BackNavLink";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<UserStackParamList, "UserBindVenue">;
 
@@ -48,7 +49,7 @@ export const BindVenueScreen = ({ navigation }: Props) => {
   const handleBind = async () => {
     const code = inviteCode.trim().toUpperCase();
     if (code.length !== 6) {
-      setError("Enter a 6-character code");
+      setError(ru.bindVenue.codeLen);
       return;
     }
     setError(undefined);
@@ -57,10 +58,10 @@ export const BindVenueScreen = ({ navigation }: Props) => {
       const venue = await venueApi.bind(code);
       await setVenue(venue.id, venue.name);
       setJoinedName(venue.name);
-      toastBus.show({ message: `Joined ${venue.name}`, severity: "success" });
+      toastBus.show({ message: `${ru.bindVenue.joinedPrefix} ${venue.name}`, severity: "success" });
     } catch {
-      toastBus.show({ message: "Invalid invite code", severity: "error" });
-      setError("Invalid invite code");
+      toastBus.show({ message: ru.bindVenue.invalidCode, severity: "error" });
+      setError(ru.bindVenue.invalidCode);
     } finally {
       setLoading(false);
     }
@@ -84,19 +85,19 @@ export const BindVenueScreen = ({ navigation }: Props) => {
             <BackNavLink color={tokens.colors.primary} onPress={() => navigation.goBack()} />
           </View>
 
-          <Text style={[styles.pageTitle, { color: tokens.colors.onSurface }]}>Join Venue</Text>
+          <Text style={[styles.pageTitle, { color: tokens.colors.onSurface }]}>{ru.bindVenue.title}</Text>
           <Text style={[styles.pageSubtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Enter invite code from your venue admin
+            {ru.bindVenue.subtitle}
           </Text>
 
           <AppInput
-            label="Invite code"
+            label={ru.bindVenue.inviteCode}
             value={inviteCode}
             onChangeText={(t) => {
               setInviteCode(t.toUpperCase().slice(0, 6));
               setError(undefined);
             }}
-            placeholder="ABCD12"
+            placeholder={ru.bindVenue.placeholder}
             autoCapitalize="characters"
             autoCorrect={false}
             maxLength={6}
@@ -112,7 +113,7 @@ export const BindVenueScreen = ({ navigation }: Props) => {
               { opacity: pressed || loading || inviteCode.trim().length !== 6 ? 0.75 : 1 },
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Verify invite code"
+            accessibilityLabel={ru.bindVenue.verifyA11y}
           >
             <LinearGradient
               colors={[P.lime, P.lime2]}
@@ -123,7 +124,7 @@ export const BindVenueScreen = ({ navigation }: Props) => {
               {loading ? (
                 <ActivityIndicator color={P.onLime} />
               ) : (
-                <Text style={[styles.verifyLabel, { color: P.onLime }]}>Verify</Text>
+                <Text style={[styles.verifyLabel, { color: P.onLime }]}>{ru.bindVenue.verify}</Text>
               )}
             </LinearGradient>
           </Pressable>
@@ -153,9 +154,9 @@ export const BindVenueScreen = ({ navigation }: Props) => {
               },
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Go to Home"
+            accessibilityLabel={ru.bindVenue.goHomeA11y}
           >
-            <Text style={[styles.goHomeText, { color: tokens.colors.onSurface }]}>Go to Home</Text>
+            <Text style={[styles.goHomeText, { color: tokens.colors.onSurface }]}>{ru.bindVenue.goHome}</Text>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>

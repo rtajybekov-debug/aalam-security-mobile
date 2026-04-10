@@ -17,14 +17,15 @@ import { ActionButton } from "../../components/ui/ActionButton";
 import { EmptyState } from "../../components/state/EmptyState";
 import { SkeletonList } from "../../components/state/SkeletonList";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<CommonStackParamList, "MyOrganizations">;
 
 const ROLE_LABELS: Record<string, string> = {
-  OWNER: "Owner",
-  MANAGER: "Manager",
-  OPERATOR: "Operator",
-  MEMBER: "Member",
+  OWNER: ru.roles.owner,
+  MANAGER: ru.roles.manager,
+  OPERATOR: ru.roles.operator,
+  MEMBER: ru.roles.member,
 };
 
 const OrgCard = React.memo(
@@ -47,7 +48,7 @@ const OrgCard = React.memo(
         },
       ]}
       accessibilityRole="button"
-      accessibilityLabel={`Open ${item.organization.name}`}
+      accessibilityLabel={`${ru.myOrgs.openA11y} ${item.organization.name}`}
     >
       <View style={styles.cardContent}>
         <Text style={[styles.orgName, { color: tokens.colors.onSurface }]} numberOfLines={1}>
@@ -65,8 +66,7 @@ const OrgCard = React.memo(
             </Text>
           </View>
           <Text style={[styles.venueCount, { color: tokens.colors.onSurfaceMuted }]}>
-            {item.organization.venues?.length ?? 0} venue
-            {(item.organization.venues?.length ?? 0) !== 1 ? "s" : ""}
+            {ru.myOrgs.venueStat} {item.organization.venues?.length ?? 0}
           </Text>
         </View>
       </View>
@@ -114,9 +114,9 @@ export const MyOrganizationsScreen = ({ navigation }: Props) => {
     <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>My Organizations</Text>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.myOrgs.title}</Text>
           <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Manage venues and operators
+            {ru.myOrgs.subtitle}
           </Text>
         </View>
 
@@ -130,7 +130,7 @@ export const MyOrganizationsScreen = ({ navigation }: Props) => {
             ListFooterComponent={
               <ActionButton
                 variant="secondary"
-                label="Request organization"
+                label={ru.myOrgs.requestOrg}
                 onPress={() => navigation.navigate("RequestNewOrganization")}
                 style={styles.createButton}
               />
@@ -138,12 +138,9 @@ export const MyOrganizationsScreen = ({ navigation }: Props) => {
           />
         ) : (
           <>
-            <EmptyState
-              title="No organizations"
-              subtitle="Create a business organization to add venues and operators"
-            />
+            <EmptyState title={ru.myOrgs.emptyTitle} subtitle={ru.myOrgs.emptySub} />
             <ActionButton
-              label="Request organization"
+              label={ru.myOrgs.requestOrg}
               onPress={() => navigation.navigate("RequestNewOrganization")}
               style={styles.createButton}
             />

@@ -11,6 +11,7 @@ import { UserBillingPlansScreen } from "../../screens/user/UserBillingPlansScree
 import { UserBillingAddonsScreen } from "../../screens/user/UserBillingAddonsScreen";
 import { UserOrganizationScreen } from "../../screens/user/UserOrganizationScreen";
 import { appStackScreenOptions } from "../ui/AppStackShell";
+import { ru } from "../../locale/ru";
 
 const Stack = createNativeStackNavigator<UserStackParamList>();
 
@@ -25,12 +26,12 @@ export const UserStack = () => (
     <Stack.Screen
       name="UserEmergencyDetails"
       component={UserEmergencyDetailsScreen}
-      options={{ title: "Emergency Details" }}
+      options={{ title: ru.nav.emergencyDetails }}
     />
     <Stack.Screen
       name="UserOrganization"
       component={UserOrganizationScreen}
-      options={{ title: "Organization" }}
+      options={{ title: ru.nav.organization }}
     />
     <Stack.Screen
       name="UserBindVenue"
@@ -40,7 +41,7 @@ export const UserStack = () => (
     <Stack.Screen
       name="UserSetupPin"
       component={SetupPinScreen}
-      options={{ title: "Enable 2FA" }}
+      options={{ title: ru.nav.setup2fa }}
     />
     <Stack.Screen
       name="UserEditDetails"
@@ -49,12 +50,12 @@ export const UserStack = () => (
     <Stack.Screen
       name="UserBillingPlans"
       component={UserBillingPlansScreen}
-      options={{ title: "Billing" }}
+      options={{ title: ru.nav.billing }}
     />
     <Stack.Screen
       name="UserBillingAddons"
       component={UserBillingAddonsScreen}
-      options={{ title: "Billing Add-ons" }}
+      options={{ title: ru.nav.billingAddons }}
     />
   </Stack.Navigator>
 );

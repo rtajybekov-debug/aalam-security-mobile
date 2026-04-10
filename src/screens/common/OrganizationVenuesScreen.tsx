@@ -15,6 +15,7 @@ import { ActionButton } from "../../components/ui/ActionButton";
 import { EmptyState } from "../../components/state/EmptyState";
 import { SkeletonList } from "../../components/state/SkeletonList";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<CommonStackParamList, "OrganizationVenues">;
 
@@ -79,9 +80,7 @@ export const OrganizationVenuesScreen = ({ route, navigation }: Props) => {
           <Text style={[styles.title, { color: tokens.colors.onSurface }]} numberOfLines={1}>
             {organizationName}
           </Text>
-          <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Venues and locations
-          </Text>
+          <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>{ru.orgVenues.subtitle}</Text>
         </View>
 
         {venues && venues.length > 0 ? (
@@ -94,7 +93,7 @@ export const OrganizationVenuesScreen = ({ route, navigation }: Props) => {
             ListFooterComponent={
               <ActionButton
                 variant="secondary"
-                label="Add venue"
+                label={ru.orgVenues.addVenue}
                 onPress={() =>
                   navigation.navigate("CreateVenue", {
                     organizationId,
@@ -107,12 +106,9 @@ export const OrganizationVenuesScreen = ({ route, navigation }: Props) => {
           />
         ) : (
           <>
-            <EmptyState
-              title="No venues"
-              subtitle="Add a venue for this organization"
-            />
+            <EmptyState title={ru.orgVenues.emptyTitle} subtitle={ru.orgVenues.emptySub} />
             <ActionButton
-              label="Add venue"
+              label={ru.orgVenues.addVenue}
               onPress={() =>
                 navigation.navigate("CreateVenue", {
                   organizationId,

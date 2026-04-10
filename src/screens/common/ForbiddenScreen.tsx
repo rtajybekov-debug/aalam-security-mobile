@@ -3,6 +3,7 @@ import { SafeAreaView, StyleSheet, View } from "react-native";
 import { useAuthStore } from "../../stores/authStore";
 import { StatusStateCard } from "../../components/state/StatusStateCard";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 export const ForbiddenScreen = () => {
   const { tokens } = useAppTheme();
@@ -11,10 +12,10 @@ export const ForbiddenScreen = () => {
     <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
       <View style={styles.container}>
         <StatusStateCard
-          badge="Forbidden"
+          badge={ru.system.forbiddenBadge}
           badgeColor="#EF4444"
-          message="Access denied. Session expired."
-          actionLabel="Go to Login"
+          message={ru.system.forbidden}
+          actionLabel={ru.system.goLogin}
           onAction={() => void logout()}
           actionTone="danger"
         />

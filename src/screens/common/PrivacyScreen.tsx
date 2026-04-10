@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { CommonStackParamList } from "../../navigation/types";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 import { AppCard } from "../../components/ui/AppCard";
 
 type Props = NativeStackScreenProps<CommonStackParamList, "Privacy">;
@@ -17,16 +18,8 @@ export const PrivacyScreen = ({}: Props) => {
       showsVerticalScrollIndicator={false}
     >
       <AppCard style={styles.legalCard}>
-        <Text style={[styles.heading, { color: tokens.colors.onSurface }]}>Privacy Policy</Text>
-        <Text style={[styles.body, { color: tokens.colors.onSurfaceMuted }]}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur congue, elit sed feugiat
-          scelerisque, augue nibh volutpat ipsum, vitae tincidunt arcu orci id est.
-          {"\n\n"}
-          We collect account details, device metadata, and emergency session data strictly to provide
-          safety services. Location is shared only when you trigger SOS or explicitly enable sharing features.
-          {"\n\n"}
-          Data is encrypted in transit and retained per applicable regulations.
-        </Text>
+        <Text style={[styles.heading, { color: tokens.colors.onSurface }]}>{ru.nav.privacy}</Text>
+        <Text style={[styles.body, { color: tokens.colors.onSurfaceMuted }]}>{ru.legal.privacyStub}</Text>
       </AppCard>
     </ScrollView>
   );

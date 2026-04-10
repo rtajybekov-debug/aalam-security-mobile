@@ -18,14 +18,15 @@ import { AppInput } from "../../components/ui/AppInput";
 import { ActionButton } from "../../components/ui/ActionButton";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 const schema = z
   .object({
-    newPassword: z.string().min(6, "Password must be at least 6 characters"),
+    newPassword: z.string().min(6, ru.validation.passwordMin),
     confirmPassword: z.string(),
   })
   .refine((d) => d.newPassword === d.confirmPassword, {
-    message: "Passwords do not match",
+    message: ru.validation.passwordsMismatch,
     path: ["confirmPassword"],
   });
 
@@ -46,15 +47,15 @@ export const ResetPasswordScreen = ({ route, navigation }: Props) => {
 
   const onSubmit = async (values: FormValues) => {
     if (!token) {
-      toastBus.show({ message: "Invalid reset link.", severity: "error" });
+      toastBus.show({ message: ru.auth.invalidResetLink, severity: "error" });
       return;
     }
     try {
       await authApi.resetPassword(token, values.newPassword);
-      toastBus.show({ message: "Password reset. You can sign in now.", severity: "success" });
+      toastBus.show({ message: ru.auth.passwordResetOk, severity: "success" });
       navigation.navigate("Login");
     } catch {
-      toastBus.show({ message: "Reset failed. Link may have expired.", severity: "error" });
+      toastBus.show({ message: ru.auth.resetFailed, severity: "error" });
     }
   };
 
@@ -69,9 +70,9 @@ export const ResetPasswordScreen = ({ route, navigation }: Props) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Change password</Text>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.auth.changePasswordTitle}</Text>
           <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Enter your new password below.
+            {ru.auth.changePasswordSubtitle}
           </Text>
         </View>
 
@@ -81,7 +82,7 @@ export const ResetPasswordScreen = ({ route, navigation }: Props) => {
             name="newPassword"
             render={({ field: { onChange, value } }) => (
               <AppInput
-                label="New password"
+                label={ru.auth.newPassword}
                 secureTextEntry
                 returnKeyType="next"
                 value={value}
@@ -96,7 +97,7 @@ export const ResetPasswordScreen = ({ route, navigation }: Props) => {
             name="confirmPassword"
             render={({ field: { onChange, value } }) => (
               <AppInput
-                label="Confirm password"
+                label={ru.auth.confirmPasswordLabel}
                 secureTextEntry
                 returnKeyType="done"
                 value={value}
@@ -109,7 +110,7 @@ export const ResetPasswordScreen = ({ route, navigation }: Props) => {
           />
 
           <ActionButton
-            label={isSubmitting ? "Resetting..." : "Reset password"}
+            label={isSubmitting ? ru.auth.resetting : ru.auth.resetPassword}
             disabled={isSubmitting}
             loading={isSubmitting}
             onPress={handleSubmit(onSubmit)}
@@ -123,7 +124,7 @@ export const ResetPasswordScreen = ({ route, navigation }: Props) => {
           accessibilityRole="link"
         >
           <Text style={[styles.backText, { color: tokens.colors.onSurfaceMuted }]}>
-            Back to Login
+            {ru.auth.backToLogin}
           </Text>
         </Pressable>
       </ScrollView>

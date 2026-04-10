@@ -24,6 +24,7 @@ import {
   requestBrightnessPermissionsAsync,
   setBrightnessAsync,
 } from "../../utils/brightness";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<UserStackParamList, "UserActiveEmergency">;
 
@@ -89,7 +90,7 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
   const handleStealthMode = async () => {
     if (!isBrightnessAvailable()) {
       toastBus.show({
-        message: "Stealth mode needs brightness access (expo-brightness).",
+        message: ru.userActiveEmergency.stealthBrightnessDev,
         severity: "info",
       });
       return;
@@ -105,16 +106,16 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
       try {
         const { status } = await requestBrightnessPermissionsAsync();
         if (status !== "granted") {
-          toastBus.show({ message: "Brightness permission required for stealth mode.", severity: "warning" });
+          toastBus.show({ message: ru.userActiveEmergency.stealthPermission, severity: "warning" });
           return;
         }
         const current = await getBrightnessAsync();
         originalBrightnessRef.current = current;
         await setBrightnessAsync(0);
         setStealthOn(true);
-        toastBus.show({ message: "Stealth on. Brightness restores when you turn it off.", severity: "info" });
+        toastBus.show({ message: ru.userActiveEmergency.stealthOn, severity: "info" });
       } catch {
-        toastBus.show({ message: "Could not change brightness.", severity: "warning" });
+        toastBus.show({ message: ru.userActiveEmergency.brightnessFail, severity: "warning" });
       }
     }
   };
@@ -129,10 +130,10 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
     try {
       await emergencyApi.close(session.id);
       setActiveSession(null);
-      toastBus.show({ message: "SOS session closed.", severity: "success" });
+      toastBus.show({ message: ru.userActiveEmergency.closedOk, severity: "success" });
       navigation.navigate("UserTabs");
     } catch {
-      toastBus.show({ message: "Failed to close session. Try again.", severity: "error" });
+      toastBus.show({ message: ru.userActiveEmergency.closeFail, severity: "error" });
     } finally {
       setIsClosing(false);
     }
@@ -140,11 +141,15 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
 
   const confirmClose = () => {
     Alert.alert(
-      "Close session?",
-      "Operators will stop receiving live updates for this SOS.",
+      ru.userActiveEmergency.closeConfirmTitle,
+      ru.userActiveEmergency.closeConfirmMsg,
       [
-        { text: "Cancel", style: "cancel" },
-        { text: "Close session", style: "destructive", onPress: () => void closeSession() },
+        { text: ru.userActiveEmergency.closeCancel, style: "cancel" },
+        {
+          text: ru.userActiveEmergency.alertDestructiveClose,
+          style: "destructive",
+          onPress: () => void closeSession(),
+        },
       ],
     );
   };
@@ -153,13 +158,17 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
     return (
       <SafeAreaView style={[styles.root, { backgroundColor: PEN.bg }]} edges={["top", "bottom"]}>
         <View style={styles.emptyWrap}>
-          <Text style={[styles.emptyTitle, { fontFamily: fonts.spaceGroteskBold }]}>No active session</Text>
-          <Text style={[styles.emptySub, { fontFamily: fonts.manropeMedium }]}>Start SOS from home to open a live session.</Text>
+          <Text style={[styles.emptyTitle, { fontFamily: fonts.spaceGroteskBold }]}>
+            {ru.userActiveEmergency.noSession}
+          </Text>
+          <Text style={[styles.emptySub, { fontFamily: fonts.manropeMedium }]}>
+            {ru.userActiveEmergency.noSessionSub}
+          </Text>
           <Pressable
             onPress={() => navigation.navigate("UserTabs")}
             style={({ pressed }) => [styles.emptyBtn, pressed && { opacity: 0.85 }]}
           >
-            <Text style={[styles.emptyBtnText, { fontFamily: fonts.manropeSemiBold }]}>Go home</Text>
+            <Text style={[styles.emptyBtnText, { fontFamily: fonts.manropeSemiBold }]}>{ru.userOrg.goHome}</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -178,20 +187,25 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
           onPress={() => navigation.goBack()}
           hitSlop={12}
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={ru.userActiveEmergency.goBack}
           style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.7 }]}
         >
           <ChevronLeft size={28} color={PEN.muted} strokeWidth={2.2} />
         </Pressable>
 
         <View style={styles.headerRow}>
-          <Text style={[styles.title, { fontFamily: fonts.spaceGroteskBold }]}>Active SOS</Text>
+          <Text style={[styles.title, { fontFamily: fonts.spaceGroteskBold }]}>{ru.userActiveEmergency.title}</Text>
           <View style={styles.statusChip}>
-            <Text style={[styles.statusChipText, { fontFamily: mono }]}>{session.status}</Text>
+            <Text style={[styles.statusChipText, { fontFamily: mono }]}>
+              {ru.emergencyStatus[session.status as keyof typeof ru.emergencyStatus] ?? session.status}
+            </Text>
           </View>
         </View>
 
-        <Text style={[styles.elapsed, { fontFamily: mono }]}>Elapsed: {elapsed}</Text>
+        <Text style={[styles.elapsed, { fontFamily: mono }]}>
+          {ru.userActiveEmergency.elapsed}
+          {elapsed}
+        </Text>
 
         <LinearGradient
           colors={[PEN.mapGradStart, PEN.mapGradEnd]}
@@ -201,7 +215,7 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
         >
           <View style={styles.mapInner}>
             <View style={[styles.youDot, { backgroundColor: PEN.lime }]} />
-            <Text style={[styles.youLabel, { fontFamily: mono, color: PEN.lime }]}>You</Text>
+            <Text style={[styles.youLabel, { fontFamily: mono, color: PEN.lime }]}>{ru.userActiveEmergency.you}</Text>
             <View style={[styles.routeBar, { backgroundColor: PEN.routeBlue }]} />
           </View>
         </LinearGradient>
@@ -216,13 +230,17 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
             end={{ x: 1, y: 1 }}
             style={styles.callSupport}
           >
-            <Text style={[styles.callSupportText, { fontFamily: fonts.spaceGroteskBold }]}>Call Support</Text>
+            <Text style={[styles.callSupportText, { fontFamily: fonts.spaceGroteskBold }]}>
+              {ru.userActiveEmergency.callSupport}
+            </Text>
           </LinearGradient>
         </Pressable>
 
         <View style={[styles.stealthCard, { borderColor: PEN.stealthBorder }]}>
           <View style={styles.stealthTop}>
-            <Text style={[styles.stealthTitle, { fontFamily: fonts.manropeSemiBold }]}>Stealth mode</Text>
+            <Text style={[styles.stealthTitle, { fontFamily: fonts.manropeSemiBold }]}>
+              {ru.userActiveEmergency.stealth}
+            </Text>
             <Pressable
               onPress={() => void handleStealthMode()}
               style={[
@@ -236,39 +254,56 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
                   { fontFamily: mono, color: stealthOn ? PEN.pillOnText : PEN.pillOffText },
                 ]}
               >
-                {stealthOn ? "ON" : "OFF"}
+                {stealthOn ? ru.userActiveEmergency.pillOn : ru.userActiveEmergency.pillOff}
               </Text>
             </Pressable>
           </View>
           <Text style={[styles.stealthSub, { fontFamily: fonts.manropeMedium }]}>
-            Screen dark, silent, vibration disabled
-            {isSendingLocation ? " · sharing location" : ""}
+            {ru.userActiveEmergency.stealthSub}
+            {isSendingLocation ? ru.userActiveEmergency.stealthLocationShare : ""}
           </Text>
           {lastLocationSentAt ? (
-            <Text style={[styles.lastPing, { fontFamily: mono }]}>Last ping: {lastLocationSentAt}</Text>
+            <Text style={[styles.lastPing, { fontFamily: mono }]}>
+              {ru.userActiveEmergency.lastPingPrefix}
+              {lastLocationSentAt}
+            </Text>
           ) : null}
         </View>
 
         <View style={styles.actionsBlock}>
-          <Text style={[styles.actionsTitle, { fontFamily: fonts.spaceGroteskBold }]}>Actions</Text>
+          <Text style={[styles.actionsTitle, { fontFamily: fonts.spaceGroteskBold }]}>
+            {ru.userActiveEmergency.actions}
+          </Text>
           <View style={styles.actionStack}>
             <Pressable
-              onPress={() => toastBus.show({ message: "Messaging will be available in a future update.", severity: "info" })}
+              onPress={() =>
+                toastBus.show({ message: ru.userActiveEmergency.comingMessage, severity: "info" })
+              }
               style={({ pressed }) => [styles.actionBtn, { borderColor: PEN.actionStroke }, pressed && { opacity: 0.88 }]}
             >
-              <Text style={[styles.actionBtnText, { fontFamily: fonts.manropeSemiBold }]}>Send message</Text>
+              <Text style={[styles.actionBtnText, { fontFamily: fonts.manropeSemiBold }]}>
+                {ru.userActiveEmergency.sendMessage}
+              </Text>
             </Pressable>
             <Pressable
-              onPress={() => toastBus.show({ message: "Photo upload will be available in a future update.", severity: "info" })}
+              onPress={() =>
+                toastBus.show({ message: ru.userActiveEmergency.comingPhoto, severity: "info" })
+              }
               style={({ pressed }) => [styles.actionBtn, { borderColor: PEN.actionStroke }, pressed && { opacity: 0.88 }]}
             >
-              <Text style={[styles.actionBtnText, { fontFamily: fonts.manropeSemiBold }]}>Send photo</Text>
+              <Text style={[styles.actionBtnText, { fontFamily: fonts.manropeSemiBold }]}>
+                {ru.userActiveEmergency.sendPhoto}
+              </Text>
             </Pressable>
             <Pressable
-              onPress={() => toastBus.show({ message: "Alert type update will be available in a future update.", severity: "info" })}
+              onPress={() =>
+                toastBus.show({ message: ru.userActiveEmergency.comingType, severity: "info" })
+              }
               style={({ pressed }) => [styles.actionBtn, { borderColor: PEN.actionStroke }, pressed && { opacity: 0.88 }]}
             >
-              <Text style={[styles.actionBtnText, { fontFamily: fonts.manropeSemiBold }]}>Update alert type</Text>
+              <Text style={[styles.actionBtnText, { fontFamily: fonts.manropeSemiBold }]}>
+                {ru.userActiveEmergency.updateType}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -284,18 +319,18 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
           ]}
         >
           <Text style={[styles.closeBtnText, { fontFamily: fonts.spaceGroteskBold }]}>
-            {isClosing ? "Closing…" : "Close session (confirm)"}
+            {isClosing ? ru.userActiveEmergency.closing : ru.userActiveEmergency.closeSessionCta}
           </Text>
         </Pressable>
 
         <View style={[styles.noteCard, { backgroundColor: PEN.noteFill, borderColor: PEN.noteStroke }]}>
           <Text style={[styles.noteText, { fontFamily: fonts.manropeMedium, color: PEN.noteText }]}>
-            Confirmation prompt appears after tapping Close session.
+            {ru.userActiveEmergency.noteConfirm}
           </Text>
         </View>
 
         <Text style={[styles.flowText, { fontFamily: mono, color: PEN.flow }]}>
-          Status flow: NEW → ASSIGNED → IN_PROGRESS → CLOSED
+          {ru.userActiveEmergency.statusFlowShort}
         </Text>
       </ScrollView>
     </SafeAreaView>

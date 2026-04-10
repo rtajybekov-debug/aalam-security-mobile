@@ -1,4 +1,5 @@
 import { AxiosError } from "axios";
+import { ru } from "../../locale/ru";
 
 export const handleApiError = (error: unknown): { status?: number; message: string } => {
   if (error instanceof AxiosError) {
@@ -12,6 +13,6 @@ export const handleApiError = (error: unknown): { status?: number; message: stri
   if (error instanceof Error) {
     return { message: error.message };
   }
-  return { message: "Unknown API error" };
+  return { message: ru.errors.unknownApi };
 };
 

@@ -5,25 +5,34 @@ import { UserStackParamList } from "../../navigation/types";
 import { useAppTheme } from "../../theme";
 import { spacing } from "../../theme";
 import { ActionButton } from "../../components/ui/ActionButton";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<UserStackParamList, "UserBillingPlans">;
 
 type BillingPeriod = "monthly" | "yearly";
 
 type Plan = {
-  id: string;
+  id: keyof typeof ru.planCopy;
   name: string;
   monthlyPrice: number;
   description: string;
   isPopular?: boolean;
 };
 
-const PLANS: Plan[] = [
-  { id: "basic", name: "Basic", monthlyPrice: 3900, description: "Entry package for individuals." },
-  { id: "pro", name: "Pro", monthlyPrice: 7900, description: "Most chosen for family coverage.", isPopular: true },
-  { id: "business", name: "Business", monthlyPrice: 12900, description: "For teams and businesses." },
-  { id: "enterprise", name: "Enterprise", monthlyPrice: 19900, description: "Custom SLA and priority support." },
+const PLAN_IDS: Array<{ id: Plan["id"]; monthlyPrice: number; isPopular?: boolean }> = [
+  { id: "basic", monthlyPrice: 3900 },
+  { id: "pro", monthlyPrice: 7900, isPopular: true },
+  { id: "business", monthlyPrice: 12900 },
+  { id: "enterprise", monthlyPrice: 19900 },
 ];
+
+const PLANS: Plan[] = PLAN_IDS.map((p) => ({
+  id: p.id,
+  name: ru.planCopy[p.id].name,
+  description: ru.planCopy[p.id].desc,
+  monthlyPrice: p.monthlyPrice,
+  isPopular: p.isPopular,
+}));
 
 export const UserBillingPlansScreen = ({ navigation }: Props) => {
   const { tokens } = useAppTheme();
@@ -50,9 +59,9 @@ export const UserBillingPlansScreen = ({ navigation }: Props) => {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Choose Your Plan</Text>
+        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.billing.plansTitle}</Text>
         <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-          {period === "monthly" ? "Monthly billing selected." : "Yearly billing selected."}
+          {period === "monthly" ? ru.billing.subMonthly : ru.billing.subYearly}
         </Text>
 
         <View style={[styles.toggleWrap, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border }]}>
@@ -64,7 +73,7 @@ export const UserBillingPlansScreen = ({ navigation }: Props) => {
             onPress={() => setPeriod("monthly")}
           >
             <Text style={[styles.toggleText, { color: period === "monthly" ? "#0A0A0A" : tokens.colors.onSurfaceMuted }]}>
-              Monthly
+              {ru.billing.periodMonthly}
             </Text>
           </Pressable>
           <Pressable
@@ -75,7 +84,7 @@ export const UserBillingPlansScreen = ({ navigation }: Props) => {
             onPress={() => setPeriod("yearly")}
           >
             <Text style={[styles.toggleText, { color: period === "yearly" ? "#0A0A0A" : tokens.colors.onSurfaceMuted }]}>
-              Yearly
+              {ru.billing.periodYearly}
             </Text>
           </Pressable>
         </View>
@@ -97,10 +106,11 @@ export const UserBillingPlansScreen = ({ navigation }: Props) => {
               >
                 <View style={styles.planHead}>
                   <Text style={[styles.planName, { color: tokens.colors.onSurface }]}>{plan.name}</Text>
-                  {plan.isPopular ? <Text style={styles.popular}>POPULAR</Text> : null}
+                  {plan.isPopular ? <Text style={styles.popular}>{ru.billing.popular}</Text> : null}
                 </View>
                 <Text style={[styles.planPrice, { color: tokens.colors.onSurface }]}>
-                  {getDisplayedPrice(plan)} c / {period === "monthly" ? "month" : "year"}
+                  {getDisplayedPrice(plan)}
+                  {ru.billing.currencySuffix} / {period === "monthly" ? ru.billing.perMonth : ru.billing.perYear}
                 </Text>
                 <Text style={[styles.planDesc, { color: tokens.colors.onSurfaceMuted }]}>{plan.description}</Text>
               </Pressable>
@@ -109,7 +119,7 @@ export const UserBillingPlansScreen = ({ navigation }: Props) => {
         </View>
 
         <ActionButton
-          label="Customize plan with add-ons"
+          label={ru.billing.customizeAddons}
           onPress={() =>
             navigation.navigate("UserBillingAddons", {
               planName: selectedPlan.name,

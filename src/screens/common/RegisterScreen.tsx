@@ -18,17 +18,18 @@ import { AppInput } from "../../components/ui/AppInput";
 import { ActionButton } from "../../components/ui/ActionButton";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 import { Check } from "lucide-react-native";
 
 const schema = z
   .object({
-    name: z.string().min(1, "Full name is required"),
-    email: z.string().email("Enter a valid email"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+    name: z.string().min(1, ru.validation.nameRequired),
+    email: z.string().email(ru.validation.emailInvalid),
+    password: z.string().min(6, ru.validation.passwordMin),
+    confirmPassword: z.string().min(1, ru.validation.confirmPassword),
   })
   .refine((d) => d.password === d.confirmPassword, {
-    message: "Passwords do not match",
+    message: ru.validation.passwordsMismatch,
     path: ["confirmPassword"],
   });
 
@@ -51,14 +52,14 @@ export const RegisterScreen = ({ navigation }: Props) => {
 
   const onSubmit = async (values: FormValues) => {
     if (!accepted) {
-      toastBus.show({ message: "Please accept Terms and Privacy.", severity: "error" });
+      toastBus.show({ message: ru.auth.acceptLegalError, severity: "error" });
       return;
     }
     try {
       await register(values.email, values.password);
-      toastBus.show({ message: "Account created successfully.", severity: "success" });
+      toastBus.show({ message: ru.auth.accountCreated, severity: "success" });
     } catch {
-      toastBus.show({ message: "Registration failed. Please try again.", severity: "error" });
+      toastBus.show({ message: ru.auth.registerFailed, severity: "error" });
     }
   };
 
@@ -73,9 +74,9 @@ export const RegisterScreen = ({ navigation }: Props) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Create account</Text>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.auth.createAccount}</Text>
           <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Join Alarm SOS
+            {ru.auth.joinSubtitle}
           </Text>
         </View>
 
@@ -85,7 +86,7 @@ export const RegisterScreen = ({ navigation }: Props) => {
             name="name"
             render={({ field: { onChange, value } }) => (
               <AppInput
-                label="Full name"
+                label={ru.auth.fullName}
                 autoCapitalize="words"
                 returnKeyType="next"
                 value={value}
@@ -101,7 +102,7 @@ export const RegisterScreen = ({ navigation }: Props) => {
             name="email"
             render={({ field: { onChange, value } }) => (
               <AppInput
-                label="Email"
+                label={ru.auth.email}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 returnKeyType="next"
@@ -118,7 +119,7 @@ export const RegisterScreen = ({ navigation }: Props) => {
             name="password"
             render={({ field: { onChange, value } }) => (
               <AppInput
-                label="Password"
+                label={ru.auth.password}
                 secureTextEntry
                 returnKeyType="next"
                 value={value}
@@ -134,7 +135,7 @@ export const RegisterScreen = ({ navigation }: Props) => {
             name="confirmPassword"
             render={({ field: { onChange, value } }) => (
               <AppInput
-                label="Confirm password"
+                label={ru.auth.confirmPasswordLabel}
                 secureTextEntry
                 returnKeyType="done"
                 value={value}
@@ -166,12 +167,12 @@ export const RegisterScreen = ({ navigation }: Props) => {
               )}
             </View>
             <Text style={[styles.checkLabel, { color: tokens.colors.onSurfaceMuted }]}>
-              I accept Terms and Privacy
+              {ru.auth.acceptLegal}
             </Text>
           </Pressable>
 
           <ActionButton
-            label={isSubmitting ? "Signing up..." : "Sign Up"}
+            label={isSubmitting ? ru.auth.signingUp : ru.auth.signUp}
             disabled={isSubmitting || !accepted}
             loading={isSubmitting}
             onPress={handleSubmit(onSubmit)}
@@ -185,8 +186,8 @@ export const RegisterScreen = ({ navigation }: Props) => {
           accessibilityRole="link"
         >
           <Text style={[styles.loginText, { color: tokens.colors.onSurfaceMuted }]}>
-            Already have an account?{" "}
-            <Text style={styles.loginAccent}>Login</Text>
+            {ru.auth.haveAccount}
+            <Text style={styles.loginAccent}>{ru.auth.loginLink}</Text>
           </Text>
         </Pressable>
       </ScrollView>

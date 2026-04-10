@@ -8,6 +8,7 @@ import { EmptyState } from "../../components/state/EmptyState";
 import { AppCard } from "../../components/ui/AppCard";
 import { StatusChip } from "../../components/ui/StatusChip";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 export const OperatorHistoryScreen = () => {
   const { tokens } = useAppTheme();
@@ -29,9 +30,9 @@ export const OperatorHistoryScreen = () => {
     return (
       <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
         <ErrorState
-          title="Unable to load history"
-          message="We could not fetch resolved sessions right now."
-          retryLabel="Reload history"
+          title={ru.operatorScreens.historyErrorTitle}
+          message={ru.operatorScreens.historyLoadMsg}
+          retryLabel={ru.operatorScreens.reloadQueue}
           onRetry={() => void query.refetch()}
         />
       </SafeAreaView>
@@ -43,10 +44,7 @@ export const OperatorHistoryScreen = () => {
   if (data.length === 0) {
     return (
       <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
-        <EmptyState
-          title="No resolved sessions"
-          subtitle="Resolved incidents will appear here once closed."
-        />
+        <EmptyState title={ru.operatorScreens.historyEmptyTitle} subtitle={ru.operatorScreens.historyEmptySub} />
       </SafeAreaView>
     );
   }
@@ -55,10 +53,10 @@ export const OperatorHistoryScreen = () => {
     <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
       <View style={styles.pageHeader}>
         <Text style={[styles.pageTitle, { color: tokens.colors.onSurface }]}>
-          Resolved Sessions
+          {ru.operatorScreens.historyPageTitle}
         </Text>
         <Text style={[styles.pageSubtitle, { color: tokens.colors.onSurfaceMuted }]}>
-          {data.length} completed incident{data.length !== 1 ? "s" : ""}
+          {ru.operatorScreens.historyCount} {data.length}
         </Text>
       </View>
       <FlatList

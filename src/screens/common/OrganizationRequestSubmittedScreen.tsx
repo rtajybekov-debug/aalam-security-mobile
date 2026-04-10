@@ -5,6 +5,7 @@ import { CommonStackParamList, RootStackParamList } from "../../navigation/types
 import { ActionButton } from "../../components/ui/ActionButton";
 import { useAppTheme } from "../../theme";
 import { spacing } from "../../theme";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<CommonStackParamList, "OrganizationRequestSubmitted">;
 
@@ -22,12 +23,9 @@ export const OrganizationRequestSubmittedScreen = ({ navigation }: Props) => {
         <View style={styles.successIconWrap}>
           <Text style={styles.successIcon}>✓</Text>
         </View>
-        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Request submitted</Text>
-        <Text style={[styles.message, { color: tokens.colors.onSurfaceMuted }]}>
-          Your request has been submitted. We will review it within 3 business days. You will
-          receive an email once approved.
-        </Text>
-        <ActionButton label="Back to Home" onPress={onBackHome} />
+        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.requestSubmitted.title}</Text>
+        <Text style={[styles.message, { color: tokens.colors.onSurfaceMuted }]}>{ru.requestSubmitted.body}</Text>
+        <ActionButton label={ru.requestSubmitted.backHome} onPress={onBackHome} />
       </View>
     </SafeAreaView>
   );

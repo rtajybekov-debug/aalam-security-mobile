@@ -9,6 +9,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { OperatorStackParamList } from "../../navigation/types";
 import { useAppTheme } from "../../theme";
 import { ENV } from "../../config/env";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<OperatorStackParamList, "OperatorLiveMap">;
 
@@ -45,7 +46,7 @@ export const OperatorLiveMapScreen = ({ route }: Props) => {
   React.useEffect(() => {
     if (!location) return;
     const timer = setTimeout(() => {
-      if (!isMapReady) setMapError("Map provider unavailable. Try again.");
+      if (!isMapReady) setMapError(ru.operatorScreens.mapProviderError);
     }, 4000);
     return () => clearTimeout(timer);
   }, [isMapReady, location]);
@@ -54,9 +55,11 @@ export const OperatorLiveMapScreen = ({ route }: Props) => {
     return (
       <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
         <View style={styles.center}>
-          <Text style={[styles.errorTitle, { color: tokens.colors.danger }]}>Map not configured</Text>
+          <Text style={[styles.errorTitle, { color: tokens.colors.danger }]}>
+            {ru.operatorScreens.mapNotConfigured}
+          </Text>
           <Text style={[styles.errorSub, { color: tokens.colors.onSurfaceMuted }]}>
-            Set EXPO_PUBLIC_MAPS_API_KEY_{Platform.OS === "ios" ? "IOS" : "ANDROID"} and rebuild.
+            {ru.operatorScreens.mapKeyHint}
           </Text>
         </View>
       </SafeAreaView>
@@ -68,15 +71,17 @@ export const OperatorLiveMapScreen = ({ route }: Props) => {
       <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
         <View style={styles.center}>
           <MapPin size={48} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
-          <Text style={[styles.errorTitle, { color: tokens.colors.onSurface }]}>No location yet</Text>
+          <Text style={[styles.errorTitle, { color: tokens.colors.onSurface }]}>
+            {ru.operatorScreens.noLocationYet}
+          </Text>
           <Text style={[styles.errorSub, { color: tokens.colors.onSurfaceMuted }]}>
-            Waiting for the first coordinate from the user device.
+            {ru.operatorScreens.noLocationSub}
           </Text>
           <ActionButton
             variant="secondary"
-            label="Retry"
+            label={ru.operatorScreens.retry}
             onPress={focusMap}
-            accessibilityLabel="Retry loading live location"
+            accessibilityLabel={ru.operatorScreens.retryLocationA11y}
           />
         </View>
       </SafeAreaView>
@@ -90,9 +95,9 @@ export const OperatorLiveMapScreen = ({ route }: Props) => {
           <Text style={[styles.errorTitle, { color: tokens.colors.danger }]}>{mapError}</Text>
           <ActionButton
             variant="secondary"
-            label="Retry Map"
+            label={ru.operatorScreens.retryMap}
             onPress={() => { setMapError(null); setIsMapReady(false); focusMap(); }}
-            accessibilityLabel="Retry map provider"
+            accessibilityLabel={ru.operatorScreens.retryMapA11y}
           />
         </View>
       </SafeAreaView>
@@ -105,7 +110,8 @@ export const OperatorLiveMapScreen = ({ route }: Props) => {
       <View style={[styles.infoBar, { backgroundColor: tokens.colors.surface, borderBottomColor: tokens.colors.border }]}>
         <View style={styles.infoLeft}>
           <Text style={[styles.sessionLabel, { color: tokens.colors.onSurfaceMuted }]}>
-            Session #{route.params.sessionId.slice(0, 8)}
+            {ru.operatorScreens.sessionPrefix}
+            {route.params.sessionId.slice(0, 8)}
           </Text>
           {selectedSession ? <StatusChip status={selectedSession.status} /> : null}
         </View>
@@ -130,7 +136,7 @@ export const OperatorLiveMapScreen = ({ route }: Props) => {
       >
         <Marker
           coordinate={{ latitude: location.latitude, longitude: location.longitude }}
-          title="Emergency location"
+          title={ru.operatorScreens.emergencyLocation}
           pinColor={tokens.status.IN_PROGRESS.border}
         />
       </MapView>

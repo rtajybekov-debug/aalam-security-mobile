@@ -5,6 +5,7 @@ import { CircleCheck } from "lucide-react-native";
 import { AdminStackParamList } from "../../navigation/types";
 import { ActionButton } from "../../components/ui/ActionButton";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<AdminStackParamList, "AdminCreateOperatorSuccess">;
 
@@ -16,12 +17,10 @@ export const AdminCreateOperatorSuccessScreen = ({ navigation }: Props) => {
         <View style={[styles.iconWrap, { backgroundColor: "#DCFCE7" }]}>
           <CircleCheck size={40} color="#166534" strokeWidth={2} />
         </View>
-        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Operator Created</Text>
-        <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-          The new operator account is ready. They can sign in and access the dispatch dashboard.
-        </Text>
+        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.admin.successTitle}</Text>
+        <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>{ru.admin.successSub}</Text>
         <ActionButton
-          label="Back to Admin Panel"
+          label={ru.operatorScreens.adminBack}
           onPress={() => navigation.navigate("AdminTabs")}
         />
       </View>

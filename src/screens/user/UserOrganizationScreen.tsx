@@ -15,6 +15,7 @@ import { organizationApi, OrganizationMember } from "../../api/modules/organizat
 import { SkeletonList } from "../../components/state/SkeletonList";
 import { ErrorState } from "../../components/state/ErrorState";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<UserStackParamList, "UserOrganization">;
 
@@ -34,15 +35,15 @@ const P = {
 const monoFont = Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" });
 
 const ROLE_LABELS: Record<string, string> = {
-  OWNER: "Owner",
-  MANAGER: "Manager",
-  OPERATOR: "Operator",
-  MEMBER: "Member",
+  OWNER: ru.roles.owner,
+  MANAGER: ru.roles.manager,
+  OPERATOR: ru.roles.operator,
+  MEMBER: ru.roles.member,
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  PERSONAL: "Personal",
-  BUSINESS: "Business",
+  PERSONAL: ru.userOrg.personal,
+  BUSINESS: ru.userOrg.business,
 };
 
 export const UserOrganizationScreen = ({ navigation }: Props) => {
@@ -87,9 +88,9 @@ export const UserOrganizationScreen = ({ navigation }: Props) => {
       <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]} edges={["bottom"]}>
         <View style={styles.loadingPad}>
           <ErrorState
-            title="Could not load organization"
-            message="Check your connection and try again."
-            retryLabel="Retry"
+            title={ru.userOrg.loadErrorTitle}
+            message={ru.userOrg.loadErrorMsg}
+            retryLabel={ru.errors.retry}
             onRetry={() => void refetch()}
           />
         </View>
@@ -105,19 +106,17 @@ export const UserOrganizationScreen = ({ navigation }: Props) => {
           contentContainerStyle={styles.emptyScroll}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.pageTitle}>Organization</Text>
+          <Text style={styles.pageTitle}>{ru.nav.organization}</Text>
           <View style={[styles.card, { borderColor: P.border, backgroundColor: P.card }]}>
-            <Text style={styles.cardTitle}>No organization yet</Text>
-            <Text style={[styles.cardBody, { color: P.muted }]}>
-              Join with an invite code or request a business organization to appear here.
-            </Text>
+            <Text style={styles.cardTitle}>{ru.userOrg.emptyTitle}</Text>
+            <Text style={[styles.cardBody, { color: P.muted }]}>{ru.userOrg.emptyBody}</Text>
           </View>
           <Pressable
             onPress={() => navigation.navigate("UserBindVenue")}
             style={styles.primaryCta}
             accessibilityRole="button"
           >
-            <Text style={styles.primaryCtaText}>Join an organization</Text>
+            <Text style={styles.primaryCtaText}>{ru.userOrg.join}</Text>
             <Text style={styles.primaryCtaText}>→</Text>
           </Pressable>
           <Pressable
@@ -125,7 +124,7 @@ export const UserOrganizationScreen = ({ navigation }: Props) => {
             style={[styles.secondaryCta, { borderColor: P.border }]}
             accessibilityRole="button"
           >
-            <Text style={styles.secondaryCtaText}>Request new organization</Text>
+            <Text style={styles.secondaryCtaText}>{ru.userOrg.request}</Text>
             <Text style={styles.secondaryCtaArrow}>→</Text>
           </Pressable>
         </ScrollView>
@@ -146,12 +145,12 @@ export const UserOrganizationScreen = ({ navigation }: Props) => {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.pageTitle}>Organization</Text>
-        <Text style={[styles.pageSubtitle, { color: P.muted }]}>Your membership and branches</Text>
+        <Text style={styles.pageTitle}>{ru.nav.organization}</Text>
+        <Text style={[styles.pageSubtitle, { color: P.muted }]}>{ru.userOrg.subtitle}</Text>
 
         <View style={[styles.card, { borderColor: P.border, backgroundColor: P.card }]}>
           <View style={styles.cardTopRow}>
-            <Text style={[styles.metaLabel, { color: P.muted }]}>Name</Text>
+            <Text style={[styles.metaLabel, { color: P.muted }]}>{ru.userOrg.name}</Text>
             <View style={styles.roleBadge}>
               <Text style={[styles.roleBadgeText, { fontFamily: monoFont }]}>{roleLabel}</Text>
             </View>
@@ -160,27 +159,26 @@ export const UserOrganizationScreen = ({ navigation }: Props) => {
             {org.name}
           </Text>
           <Text style={[styles.typeLine, { color: P.sessionMuted }]}>
-            Type · {typeLabel}
+            {ru.userOrg.typePrefix}
+            {typeLabel}
           </Text>
           {memberCount != null ? (
             <Text style={[styles.statLine, { color: P.muted }]}>
-              {venues.length} branch{venues.length !== 1 ? "es" : ""}
+              {ru.userOrg.statsVenues} {venues.length}
               {" · "}
-              {memberCount} member{memberCount !== 1 ? "s" : ""}
+              {ru.userOrg.statsMembers} {memberCount}
             </Text>
           ) : (
             <Text style={[styles.statLine, { color: P.muted }]}>
-              {venues.length} branch{venues.length !== 1 ? "es" : ""}
+              {ru.userOrg.statsVenues} {venues.length}
             </Text>
           )}
         </View>
 
-        <Text style={[styles.sectionLabel, { color: P.muted }]}>Branches</Text>
+        <Text style={[styles.sectionLabel, { color: P.muted }]}>{ru.userOrg.branches}</Text>
         {venues.length === 0 ? (
           <View style={[styles.card, { borderColor: P.border, backgroundColor: P.card }]}>
-            <Text style={[styles.cardBody, { color: P.sessionMuted }]}>
-              No venues yet. Owners and managers can add branches from manage screen.
-            </Text>
+            <Text style={[styles.cardBody, { color: P.sessionMuted }]}>{ru.userOrg.noVenues}</Text>
           </View>
         ) : (
           <View style={styles.venueList}>
@@ -206,9 +204,9 @@ export const UserOrganizationScreen = ({ navigation }: Props) => {
           onPress={() => openVenuesInCommon(m)}
           style={styles.primaryCta}
           accessibilityRole="button"
-          accessibilityLabel="Manage venues and branches"
+          accessibilityLabel={ru.userOrg.manageA11y}
         >
-          <Text style={styles.primaryCtaText}>Manage venues & branches</Text>
+          <Text style={styles.primaryCtaText}>{ru.userOrg.manage}</Text>
           <Text style={styles.primaryCtaText}>→</Text>
         </Pressable>
 
@@ -217,7 +215,7 @@ export const UserOrganizationScreen = ({ navigation }: Props) => {
           style={[styles.secondaryCta, { borderColor: P.border }]}
           accessibilityRole="button"
         >
-          <Text style={styles.secondaryCtaText}>Assign or change venue</Text>
+          <Text style={styles.secondaryCtaText}>{ru.userOrg.assignVenue}</Text>
           <Text style={styles.secondaryCtaArrow}>→</Text>
         </Pressable>
 
@@ -226,12 +224,13 @@ export const UserOrganizationScreen = ({ navigation }: Props) => {
           style={[styles.tertiaryRow, { borderColor: P.border }]}
           accessibilityRole="button"
         >
-          <Text style={[styles.tertiaryText, { color: P.textBlue }]}>Open full organization list (profile)</Text>
+          <Text style={[styles.tertiaryText, { color: P.textBlue }]}>{ru.userOrg.openFullList}</Text>
           <Text style={[styles.tertiaryArrow, { color: P.textBlue }]}>→</Text>
         </Pressable>
 
         <Text style={[styles.footerNote, { color: P.caption, fontFamily: monoFont }]}>
-          Organization ID · {org.slug}
+          {ru.userOrg.orgId}
+          {org.slug}
         </Text>
       </ScrollView>
     </SafeAreaView>

@@ -32,6 +32,7 @@ import { EmergencySession } from "../../types/emergency";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useWebsocketStore } from "../../stores/websocketStore";
 import { ENV } from "../../config/env";
+import { ru } from "../../locale/ru";
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<OperatorTabParamList, "Dashboard">,
@@ -67,11 +68,11 @@ const SessionListItem = React.memo(
         </Text>
       </View>
       <Text style={[styles.cardEmail, { color: tokens.colors.onSurface }]} numberOfLines={1}>
-        {item.user?.email ?? "Unknown user"}
+        {item.user?.email ?? ru.operatorScreens.unknownUser}
       </Text>
       <View style={styles.cardActions}>
-        <ActionButton variant="secondary" size="small" label="Details" onPress={() => onDetails(item)} />
-        <ActionButton variant="secondary" size="small" label="Live map" onPress={() => onLiveMap(item)} />
+        <ActionButton variant="secondary" size="small" label={ru.operatorScreens.details} onPress={() => onDetails(item)} />
+        <ActionButton variant="secondary" size="small" label={ru.operatorScreens.liveMapShort} onPress={() => onLiveMap(item)} />
       </View>
     </Pressable>
   ),
@@ -150,7 +151,7 @@ export const OperatorDashboardScreen = ({ navigation }: Props) => {
   React.useEffect(() => {
     if (!lastEventAt || lastEventAt === prevLastEventAt.current) return;
     prevLastEventAt.current = lastEventAt;
-    toastBus.show({ message: "Live queue updated", severity: "info", duration: 1400 });
+    toastBus.show({ message: ru.operator.queueUpdated, severity: "info", duration: 1400 });
   }, [lastEventAt]);
 
   const focusSession = React.useCallback(
@@ -259,9 +260,9 @@ export const OperatorDashboardScreen = ({ navigation }: Props) => {
           <MapView provider={PROVIDER_GOOGLE} style={StyleSheet.absoluteFill} initialRegion={DEFAULT_REGION} />
           <View style={styles.errorOverlay}>
             <ErrorState
-              title="Failed to load active sessions"
-              message="Map queue temporarily unavailable."
-              retryLabel="Reload queue"
+              title={ru.operatorScreens.loadSessionsFail}
+              message={ru.operatorScreens.loadSessionsMsg}
+              retryLabel={ru.operatorScreens.reloadQueue}
               onRetry={() => void query.refetch()}
             />
           </View>
@@ -277,8 +278,8 @@ export const OperatorDashboardScreen = ({ navigation }: Props) => {
         {!hasMapKey ? (
           <View style={[styles.errorOverlay, { backgroundColor: tokens.colors.background }]}>
             <ErrorState
-              title="Map not configured"
-              message={`Set EXPO_PUBLIC_MAPS_API_KEY_${Platform.OS === "ios" ? "IOS" : "ANDROID"} and rebuild.`}
+              title={ru.operatorScreens.mapNotConfigured}
+              message={ru.operatorScreens.mapKeyHint}
             />
           </View>
         ) : null}
@@ -302,7 +303,7 @@ export const OperatorDashboardScreen = ({ navigation }: Props) => {
               key={item.session.id}
               coordinate={{ latitude: item.latitude, longitude: item.longitude }}
               pinColor={markerColor(item.session.status)}
-              title={item.session.user?.email ?? "Emergency"}
+              title={item.session.user?.email ?? ru.operatorScreens.markerEmergency}
               description={`${item.session.status} • ${new Date(item.session.createdAt).toLocaleTimeString()}`}
               onPress={() => focusSession(item.session)}
             />
@@ -319,14 +320,14 @@ export const OperatorDashboardScreen = ({ navigation }: Props) => {
               <OperatorHeartbeatStatusScreen />
             </View>
             <View style={styles.topActions}>
-              <ActionButton variant="secondary" size="small" label="Me" onPress={centerOnMe} disabled={!operatorLocation} />
-              <ActionButton variant="secondary" size="small" label="Center" onPress={centerSelected} />
-              <ActionButton variant="secondary" size="small" label="Fit All" onPress={fitAll} />
-              <ActionButton variant="secondary" size="small" label="History" onPress={() => navigation.navigate("History")} />
+              <ActionButton variant="secondary" size="small" label={ru.operatorScreens.me} onPress={centerOnMe} disabled={!operatorLocation} />
+              <ActionButton variant="secondary" size="small" label={ru.operatorScreens.center} onPress={centerSelected} />
+              <ActionButton variant="secondary" size="small" label={ru.operatorScreens.fitAll} onPress={fitAll} />
+              <ActionButton variant="secondary" size="small" label={ru.operatorScreens.history} onPress={() => navigation.navigate("History")} />
               <ActionButton
                 variant="ghost"
                 size="small"
-                label="Profile"
+                label={ru.operatorScreens.profile}
                 onPress={() => rootNavigation.navigate("Common", { screen: "Profile" })}
               />
             </View>
@@ -345,14 +346,14 @@ export const OperatorDashboardScreen = ({ navigation }: Props) => {
             onPress={() => setIsPanelExpanded((v) => !v)}
             style={styles.panelHandle}
             accessibilityRole="button"
-            accessibilityLabel="Toggle incident panel"
+            accessibilityLabel={ru.operatorScreens.togglePanelA11y}
           >
             <View style={[styles.handleBar, { backgroundColor: tokens.colors.border }]} />
             <Text style={[styles.panelTitle, { color: tokens.colors.onSurface }]}>
               Active incidents ({data.length})
             </Text>
             <Text style={[styles.panelToggle, { color: tokens.colors.primary }]}>
-              {isPanelExpanded ? "Hide" : "Show"}
+              {isPanelExpanded ? ru.operatorScreens.panelHide : ru.operatorScreens.panelShow}
             </Text>
           </Pressable>
 
@@ -373,8 +374,8 @@ export const OperatorDashboardScreen = ({ navigation }: Props) => {
               />
             ) : (
               <EmptyState
-                title="No active incidents"
-                subtitle="Incoming emergency sessions will appear here."
+                title={ru.operatorScreens.noActiveTitle}
+                subtitle={ru.operatorScreens.noActiveSub}
               />
             )
           ) : null}

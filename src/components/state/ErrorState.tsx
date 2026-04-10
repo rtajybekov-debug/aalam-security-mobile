@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { ru } from "../../locale/ru";
 import { StatusStateCard } from "./StatusStateCard";
 
 interface Props {
@@ -10,10 +11,10 @@ interface Props {
 }
 
 export const ErrorState = ({
-  title = "Network error",
-  message = "Please check your connection and try again.",
+  title = ru.errors.networkTitle,
+  message = ru.errors.networkMessage,
   onRetry,
-  retryLabel = "Retry",
+  retryLabel = ru.errors.retry,
 }: Props) => {
   return (
     <View style={styles.container}>

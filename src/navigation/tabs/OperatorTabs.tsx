@@ -5,6 +5,7 @@ import { OperatorTabParamList } from "../types";
 import { OperatorDashboardScreen } from "../../screens/operator/OperatorDashboardScreen";
 import { OperatorHistoryScreen } from "../../screens/operator/OperatorHistoryScreen";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 const Tab = createBottomTabNavigator<OperatorTabParamList>();
 
@@ -35,22 +36,22 @@ export const OperatorTabs = () => {
         name="Dashboard"
         component={OperatorDashboardScreen}
         options={{
-          tabBarLabel: "Map",
+          tabBarLabel: ru.operatorTabs.map,
           tabBarIcon: ({ color, size }) => (
             <Map size={size ?? 22} color={color} strokeWidth={2} />
           ),
-          tabBarAccessibilityLabel: "Dashboard map",
+          tabBarAccessibilityLabel: ru.operatorTabs.mapA11y,
         }}
       />
       <Tab.Screen
         name="History"
         component={OperatorHistoryScreen}
         options={{
-          tabBarLabel: "History",
+          tabBarLabel: ru.operatorTabs.history,
           tabBarIcon: ({ color, size }) => (
             <ClipboardList size={size ?? 22} color={color} strokeWidth={2} />
           ),
-          tabBarAccessibilityLabel: "Operator history",
+          tabBarAccessibilityLabel: ru.operatorTabs.historyA11y,
         }}
       />
     </Tab.Navigator>

@@ -18,9 +18,10 @@ import { AppInput } from "../../components/ui/AppInput";
 import { ActionButton } from "../../components/ui/ActionButton";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, ru.validation.nameRequired),
   address: z.string().optional(),
 });
 
@@ -48,11 +49,11 @@ export const CreateVenueScreen = ({ route, navigation }: Props) => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["venues", organizationId] });
-      toastBus.show({ message: "Venue added.", severity: "success" });
+      toastBus.show({ message: ru.orgFlow.venueAdded, severity: "success" });
       navigation.goBack();
     },
     onError: () => {
-      toastBus.show({ message: "Failed to add venue.", severity: "error" });
+      toastBus.show({ message: ru.orgFlow.venueAddFail, severity: "error" });
     },
   });
 
@@ -74,7 +75,7 @@ export const CreateVenueScreen = ({ route, navigation }: Props) => {
           <Text style={[styles.orgLabel, { color: tokens.colors.onSurfaceMuted }]}>
             {organizationName}
           </Text>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Add venue</Text>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.venueForm.title}</Text>
         </View>
 
         <View
@@ -92,8 +93,8 @@ export const CreateVenueScreen = ({ route, navigation }: Props) => {
               name="name"
               render={({ field: { onChange, value } }) => (
                 <AppInput
-                  label="Venue name"
-                  placeholder="Main Hall"
+                  label={ru.venueForm.name}
+                  placeholder={ru.venueForm.namePh}
                   value={value}
                   onChangeText={onChange}
                   error={errors.name?.message}
@@ -106,8 +107,8 @@ export const CreateVenueScreen = ({ route, navigation }: Props) => {
               name="address"
               render={({ field: { onChange, value } }) => (
                 <AppInput
-                  label="Address (optional)"
-                  placeholder="123 Main St"
+                  label={ru.venueForm.address}
+                  placeholder={ru.venueForm.addressPh}
                   value={value || ""}
                   onChangeText={onChange}
                   autoComplete="street-address"
@@ -115,7 +116,7 @@ export const CreateVenueScreen = ({ route, navigation }: Props) => {
               )}
             />
             <ActionButton
-              label={createMutation.isPending ? "Adding..." : "Add venue"}
+              label={createMutation.isPending ? ru.venueForm.adding : ru.venueForm.submit}
               onPress={handleSubmit(onSubmit)}
               loading={createMutation.isPending}
               disabled={createMutation.isPending || isSubmitting}

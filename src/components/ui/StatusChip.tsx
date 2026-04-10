@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { ru } from "../../locale/ru";
 import { EmergencyStatus } from "../../types/emergency";
 import { useAppTheme } from "../../theme";
 import { radius } from "../../theme";
@@ -9,10 +10,10 @@ interface Props {
 }
 
 const statusLabel: Record<EmergencyStatus, string> = {
-  NEW: "New",
-  ASSIGNED: "Assigned",
-  IN_PROGRESS: "In Progress",
-  CLOSED: "Closed",
+  NEW: ru.emergencyStatus.NEW,
+  ASSIGNED: ru.emergencyStatus.ASSIGNED,
+  IN_PROGRESS: ru.emergencyStatus.IN_PROGRESS,
+  CLOSED: ru.emergencyStatus.CLOSED,
 };
 
 export const StatusChip = ({ status }: Props) => {

@@ -21,6 +21,7 @@ import { UserProfileScreen } from "../../screens/user/UserProfileScreen";
 import { useAppTheme } from "../../theme";
 import { fonts } from "../../theme/fonts";
 import { conceptLightPalette } from "../../theme/colors";
+import { ru } from "../../locale/ru";
 
 const Tab = createBottomTabNavigator<UserTabParamList>();
 
@@ -67,9 +68,9 @@ function TabItem({
   const scale = useSharedValue(1);
   const Icon = TAB_ICONS[name];
   const labels: Record<keyof UserTabParamList, string> = {
-    Home: "Home",
-    History: "History",
-    Profile: "Profile",
+    Home: ru.tabs.home,
+    History: ru.tabs.history,
+    Profile: ru.tabs.profile,
   };
   const color = focused ? activeColor : inactiveColor;
 

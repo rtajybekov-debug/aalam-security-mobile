@@ -9,6 +9,7 @@ import { AppCard } from "../../components/ui/AppCard";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<AdminTabParamList, "Home">,
@@ -24,25 +25,23 @@ export const AdminHomeScreen = ({ navigation }: Props) => {
       <View style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Admin Panel</Text>
-          <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Manage operator access and system settings.
-          </Text>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.admin.panelTitle}</Text>
+          <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>{ru.admin.panelSub}</Text>
         </View>
 
         {/* Quick actions */}
         <AppCard>
           <Text style={[styles.sectionLabel, { color: tokens.colors.onSurfaceMuted }]}>
-            OPERATOR MANAGEMENT
+            {ru.admin.operatorMgmt}
           </Text>
           <Text style={[styles.cardBody, { color: tokens.colors.onSurfaceMuted }]}>
-            Create operator accounts and manage emergency responder access to the platform.
+            {ru.admin.operatorMgmtBody}
           </Text>
           <ActionButton
-            label="Create Operator"
+            label={ru.operatorScreens.createOperator}
             onPress={() => navigation.navigate("AdminCreateOperator")}
             style={styles.cardAction}
-            accessibilityLabel="Create new operator account"
+            accessibilityLabel={ru.operatorScreens.createOperatorA11y}
           />
         </AppCard>
 
@@ -50,9 +49,9 @@ export const AdminHomeScreen = ({ navigation }: Props) => {
 
         <ActionButton
           variant="ghost"
-          label="Profile & Logout"
+          label={ru.operatorScreens.profileLogout}
           onPress={() => rootNavigation.navigate("Common", { screen: "Profile" })}
-          accessibilityLabel="Open profile and logout"
+          accessibilityLabel={ru.operatorScreens.profileLogoutA11y}
         />
       </View>
     </SafeAreaView>

@@ -10,9 +10,10 @@ import { ActionButton } from "../../components/ui/ActionButton";
 import { AppInput } from "../../components/ui/AppInput";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 const schema = z.object({
-  resolution: z.string().min(1, "Resolution note is required"),
+  resolution: z.string().min(1, ru.operatorScreens.resolutionRequired),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -33,10 +34,10 @@ export const OperatorResolveModalScreen = ({ route, navigation }: Props) => {
   const onSubmit = async (values: FormValues) => {
     try {
       await dispatchApi.resolve(sessionId, values.resolution);
-      toastBus.show({ message: "Session resolved successfully.", severity: "success" });
+      toastBus.show({ message: ru.operator.resolved, severity: "success" });
       navigation.goBack();
     } catch {
-      toastBus.show({ message: "Failed to resolve session.", severity: "error" });
+      toastBus.show({ message: ru.operator.resolveFail, severity: "error" });
     }
   };
 
@@ -47,9 +48,9 @@ export const OperatorResolveModalScreen = ({ route, navigation }: Props) => {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.content}>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Resolve Session</Text>
+          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.operatorScreens.resolveTitle}</Text>
           <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Provide a resolution note before closing this emergency session.
+            {ru.operatorScreens.resolveSub}
           </Text>
 
           <Controller
@@ -57,8 +58,8 @@ export const OperatorResolveModalScreen = ({ route, navigation }: Props) => {
             name="resolution"
             render={({ field: { value, onChange } }) => (
               <AppInput
-                label="Resolution note"
-                placeholder="Describe how the emergency was resolved..."
+                label={ru.operatorScreens.resolveNote}
+                placeholder={ru.operatorScreens.resolveNotePh}
                 value={value}
                 onChangeText={onChange}
                 multiline
@@ -73,18 +74,18 @@ export const OperatorResolveModalScreen = ({ route, navigation }: Props) => {
           <View style={styles.actions}>
             <ActionButton
               variant="secondary"
-              label="Cancel"
+              label={ru.operatorScreens.cancel}
               onPress={() => navigation.goBack()}
               style={styles.cancelBtn}
             />
             <ActionButton
               variant="danger"
-              label={isSubmitting ? "Saving..." : "Resolve"}
+              label={isSubmitting ? ru.operatorScreens.resolving : ru.operatorScreens.resolveBtn}
               onPress={handleSubmit(onSubmit)}
               loading={isSubmitting}
               disabled={isSubmitting}
               style={styles.resolveBtn}
-              accessibilityLabel="Confirm session resolution"
+              accessibilityLabel={ru.operatorScreens.confirmResolveA11y}
             />
           </View>
         </View>

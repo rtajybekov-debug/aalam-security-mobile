@@ -24,6 +24,7 @@ import { AppCard } from "../../components/ui/AppCard";
 import { useAppTheme } from "../../theme";
 import { spacing } from "../../theme";
 import type { EmergencySession } from "../../types/emergency";
+import { ru } from "../../locale/ru";
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<UserTabParamList, "History">,
@@ -48,30 +49,30 @@ const HistoryCard = React.memo(function HistoryCard({
   const headline =
     item.resolution?.trim() ||
     (item.status === "CLOSED"
-      ? "Incident closed"
+      ? ru.emergencyHistory.closed
       : item.status === "IN_PROGRESS"
-        ? "SOS triggered and being handled"
+        ? ru.emergencyHistory.inProgress
         : item.status === "ASSIGNED"
-          ? "Operator assigned to emergency"
-          : "Manual panic trigger");
+          ? ru.emergencyHistory.assigned
+          : ru.emergencyHistory.manual);
 
   const meta =
     item.status === "CLOSED" && item.closedAt
       ? (() => {
           const closed = new Date(item.closedAt);
           const diffMin = Math.max(1, Math.round((closed.getTime() - created.getTime()) / 60000));
-          return `Assigned and closed in ${diffMin}m`;
+          return `${ru.emergencyHistory.closedIn} ${diffMin}${ru.emergencyHistory.minShort}`;
         })()
       : item.status === "ASSIGNED"
-        ? "Operator assigned · follow-up pending"
+        ? ru.emergencyHistory.assignedPending
         : item.status === "IN_PROGRESS"
-          ? "Tap to view session timeline"
-          : "No responder action recorded";
+          ? ru.emergencyHistory.tapTimeline
+          : ru.emergencyHistory.noAction;
 
   return (
     <AppCard compact onPress={onPress} style={styles.historyCard}>
       <Text style={[styles.dateAndStatus, { color: tokens.status[item.status].border }]}>
-        {dateStr} · {item.status}
+        {dateStr} · {ru.emergencyStatus[item.status as keyof typeof ru.emergencyStatus] ?? item.status}
       </Text>
       <Text style={[styles.headline, { color: tokens.colors.onSurface }]} numberOfLines={2}>
         {headline}
@@ -134,9 +135,9 @@ export const UserEmergencyHistoryScreen = ({ navigation }: Props) => {
     return (
       <SafeAreaView style={rootStyle}>
         <ErrorState
-          title="Unable to load history"
-          message="We could not fetch your sessions right now."
-          retryLabel="Reload history"
+          title={ru.emergencyHistory.loadErrorTitle}
+          message={ru.emergencyHistory.loadErrorMsg}
+          retryLabel={ru.emergencyHistory.retry}
           onRetry={() => void query.refetch()}
         />
       </SafeAreaView>
@@ -153,10 +154,7 @@ export const UserEmergencyHistoryScreen = ({ navigation }: Props) => {
           refreshControl={refreshControl}
           showsVerticalScrollIndicator={false}
         >
-          <EmptyState
-            title="No history yet"
-            subtitle="Resolved emergency sessions will appear here after your first incident."
-          />
+          <EmptyState title={ru.emergencyHistory.emptyTitle} subtitle={ru.emergencyHistory.emptySub} />
         </ScrollView>
       </SafeAreaView>
     );
@@ -165,11 +163,9 @@ export const UserEmergencyHistoryScreen = ({ navigation }: Props) => {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
       <View style={[styles.pageHeader, { paddingTop: Math.max(spacing.lg, insets.top + 8) }]}>
-        <Text style={[styles.pageTitle, { color: tokens.colors.onSurface }]}>
-          Emergency History
-        </Text>
+        <Text style={[styles.pageTitle, { color: tokens.colors.onSurface }]}>{ru.emergencyHistory.pageTitle}</Text>
         <Text style={[styles.pageSubtitle, { color: tokens.colors.onSurfaceMuted }]}>
-          Tap an item to open details
+          {ru.emergencyHistory.pageSub}
         </Text>
       </View>
       <FlatList

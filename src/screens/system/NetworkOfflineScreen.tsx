@@ -2,6 +2,7 @@ import React from "react";
 import { SafeAreaView, StyleSheet, View } from "react-native";
 import { StatusStateCard } from "../../components/state/StatusStateCard";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 export const NetworkOfflineScreen = () => {
   const { tokens } = useAppTheme();
@@ -9,10 +10,10 @@ export const NetworkOfflineScreen = () => {
     <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
       <View style={styles.content}>
         <StatusStateCard
-          badge="Offline"
+          badge={ru.system.offlineBadge}
           badgeColor="#F59E0B"
-          message="No internet connection. Showing cached data."
-          actionLabel="Retry"
+          message={ru.system.offline}
+          actionLabel={ru.errors.retry}
           onAction={() => {}}
         />
       </View>

@@ -11,10 +11,11 @@ import { ActionButton } from "../../components/ui/ActionButton";
 import { AppInput } from "../../components/ui/AppInput";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 const schema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email(ru.validation.emailInvalid),
+  password: z.string().min(6, ru.validation.passwordMin),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -34,10 +35,10 @@ export const AdminCreateOperatorScreen = ({ navigation }: Props) => {
   const onSubmit = async (values: FormValues) => {
     try {
       await adminApi.createOperator(values);
-      toastBus.show({ message: "Operator created successfully.", severity: "success" });
+      toastBus.show({ message: ru.admin.operatorCreated, severity: "success" });
       navigation.navigate("AdminCreateOperatorSuccess");
     } catch {
-      toastBus.show({ message: "Failed to create operator.", severity: "error" });
+      toastBus.show({ message: ru.admin.operatorFail, severity: "error" });
     }
   };
 
@@ -50,15 +51,15 @@ export const AdminCreateOperatorScreen = ({ navigation }: Props) => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Create Operator</Text>
+            <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.admin.createOperatorTitle}</Text>
             <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-              New operator account will have access to the emergency dispatch dashboard.
+              {ru.admin.createOperatorSub}
             </Text>
           </View>
 
           <AppCard>
             <Text style={[styles.sectionLabel, { color: tokens.colors.onSurfaceMuted }]}>
-              ACCOUNT DETAILS
+              {ru.admin.accountDetails}
             </Text>
 
             <View style={styles.form}>
@@ -67,8 +68,8 @@ export const AdminCreateOperatorScreen = ({ navigation }: Props) => {
                 name="email"
                 render={({ field: { value, onChange } }) => (
                   <AppInput
-                    label="Email address"
-                    placeholder="operator@organization.com"
+                    label={ru.operatorScreens.operatorEmail}
+                    placeholder={ru.operatorScreens.operatorEmailPh}
                     value={value}
                     onChangeText={onChange}
                     autoCapitalize="none"
@@ -84,8 +85,8 @@ export const AdminCreateOperatorScreen = ({ navigation }: Props) => {
                 name="password"
                 render={({ field: { value, onChange } }) => (
                   <AppInput
-                    label="Password"
-                    placeholder="Minimum 6 characters"
+                    label={ru.operatorScreens.operatorPass}
+                    placeholder={ru.operatorScreens.operatorPassPh}
                     value={value}
                     onChangeText={onChange}
                     secureTextEntry
@@ -97,7 +98,7 @@ export const AdminCreateOperatorScreen = ({ navigation }: Props) => {
               />
 
               <ActionButton
-                label={isSubmitting ? "Creating..." : "Create Operator"}
+                label={isSubmitting ? ru.admin.creating : ru.admin.createOperatorBtn}
                 onPress={handleSubmit(onSubmit)}
                 loading={isSubmitting}
                 disabled={isSubmitting}

@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { CommonStackParamList } from "../../navigation/types";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 import { AppCard } from "../../components/ui/AppCard";
 
 type Props = NativeStackScreenProps<CommonStackParamList, "Terms">;
@@ -17,18 +18,8 @@ export const TermsScreen = ({}: Props) => {
       showsVerticalScrollIndicator={false}
     >
       <AppCard style={styles.legalCard}>
-        <Text style={[styles.heading, { color: tokens.colors.onSurface }]}>Terms of Service</Text>
-        <Text style={[styles.body, { color: tokens.colors.onSurfaceMuted }]}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non diam vitae ipsum convallis
-          dapibus. Praesent pretium, lorem vitae dictum euismod, nibh velit faucibus velit, vel porta
-          augue libero in est.
-          {"\n\n"}
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;
-          Duis semper, nibh at pulvinar dictum, augue nunc dignissim velit, sed gravida nunc nisl
-          non odio.
-          {"\n\n"}
-          By continuing to use the app, you agree to these terms and all applicable local laws.
-        </Text>
+        <Text style={[styles.heading, { color: tokens.colors.onSurface }]}>{ru.nav.terms}</Text>
+        <Text style={[styles.body, { color: tokens.colors.onSurfaceMuted }]}>{ru.legal.termsStub}</Text>
       </AppCard>
     </ScrollView>
   );

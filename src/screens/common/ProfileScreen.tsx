@@ -9,11 +9,12 @@ import { useNavigation } from "@react-navigation/native";
 import { roleToRootScreen, RootStackParamList } from "../../navigation/types";
 import { useAppTheme } from "../../theme";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { ru } from "../../locale/ru";
 
 const ROLE_LABELS: Record<string, string> = {
-  USER: "End User",
-  OPERATOR: "Operator",
-  ADMIN: "Administrator",
+  USER: ru.roles.endUser,
+  OPERATOR: ru.roles.operator,
+  ADMIN: ru.roles.admin,
 };
 
 export const ProfileScreen = () => {
@@ -47,7 +48,7 @@ export const ProfileScreen = () => {
               style={[styles.editAction, { borderColor: tokens.colors.border, backgroundColor: tokens.colors.surface }]}
               onPress={() => navigation.navigate("User", { screen: "UserEditDetails" })}
             >
-              <Text style={[styles.editText, { color: tokens.colors.primary }]}>Edit</Text>
+              <Text style={[styles.editText, { color: tokens.colors.primary }]}>{ru.profileCommon.edit}</Text>
             </Pressable>
           ) : null}
         </View>
@@ -55,24 +56,30 @@ export const ProfileScreen = () => {
         {/* Info card */}
         <AppCard>
           <Text style={[styles.sectionLabel, { color: tokens.colors.onSurfaceMuted }]}>
-            ACCOUNT INFO
+            {ru.profileCommon.accountInfo}
           </Text>
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: tokens.colors.onSurfaceMuted }]}>Email</Text>
+            <Text style={[styles.infoLabel, { color: tokens.colors.onSurfaceMuted }]}>
+              {ru.profileCommon.email}
+            </Text>
             <Text style={[styles.infoValue, { color: tokens.colors.onSurface }]} numberOfLines={1}>
               {user?.email ?? "—"}
             </Text>
           </View>
           <Divider style={styles.divider} />
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: tokens.colors.onSurfaceMuted }]}>Role</Text>
+            <Text style={[styles.infoLabel, { color: tokens.colors.onSurfaceMuted }]}>
+              {ru.profileCommon.role}
+            </Text>
             <Text style={[styles.infoValue, { color: tokens.colors.onSurface }]}>{roleLabel}</Text>
           </View>
           <Divider style={styles.divider} />
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: tokens.colors.onSurfaceMuted }]}>Access</Text>
+            <Text style={[styles.infoLabel, { color: tokens.colors.onSurfaceMuted }]}>
+              {ru.profileCommon.access}
+            </Text>
             <Text style={[styles.infoValue, { color: tokens.colors.onSurfaceMuted }]}>
-              Managed by backend policy
+              {ru.profileCommon.accessHint}
             </Text>
           </View>
         </AppCard>
@@ -81,7 +88,7 @@ export const ProfileScreen = () => {
           <ActionButton
             variant="secondary"
             size="small"
-            label="My Organizations"
+            label={ru.profileCommon.myOrgs}
             onPress={() => navigation.navigate("Common", { screen: "MyOrganizations" })}
           />
         </View>
@@ -90,13 +97,13 @@ export const ProfileScreen = () => {
           <ActionButton
             variant="ghost"
             size="small"
-            label="Terms of Service"
+            label={ru.profileCommon.terms}
             onPress={() => navigation.navigate("Common", { screen: "Terms" })}
           />
           <ActionButton
             variant="ghost"
             size="small"
-            label="Privacy Policy"
+            label={ru.profileCommon.privacy}
             onPress={() => navigation.navigate("Common", { screen: "Privacy" })}
           />
         </View>
@@ -107,18 +114,18 @@ export const ProfileScreen = () => {
         {roleRoot ? (
           <ActionButton
             variant="secondary"
-            label="Back to Workspace"
+            label={ru.profileCommon.backWorkspace}
             onPress={() => navigation.navigate(roleRoot)}
-            accessibilityLabel="Return to main role workspace"
+            accessibilityLabel={ru.profileCommon.backWorkspaceA11y}
           />
         ) : null}
 
         {/* Logout */}
         <ActionButton
           variant="danger"
-          label="Sign Out"
+          label={ru.profileCommon.signOut}
           onPress={() => void logout()}
-          accessibilityLabel="Sign out from account"
+          accessibilityLabel={ru.profileCommon.signOutA11y}
         />
       </View>
     </SafeAreaView>

@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RootStackParamList, roleToRootScreen } from "../../navigation/types";
 import { useAuthStore } from "../../stores/authStore";
 import { fonts } from "../../theme/fonts";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Splash">;
 
@@ -107,9 +108,7 @@ export const SplashScreen = ({ navigation }: Props) => {
             </View>
 
             <Text style={styles.appName}>Alarm SOS</Text>
-            <Text style={styles.desc}>
-              Instant emergency response, live geolocation, and trusted support in one tap.
-            </Text>
+            <Text style={styles.desc}>{ru.splash.tagline}</Text>
 
             <View style={styles.flexSpacer} />
 
@@ -118,10 +117,10 @@ export const SplashScreen = ({ navigation }: Props) => {
               <View style={[styles.dot, { backgroundColor: C.dotInactive }]} />
             </View>
 
-            <GradientCta label="Get started" onPress={() => goPage(1)} />
+            <GradientCta label={ru.splash.getStarted} onPress={() => goPage(1)} />
 
             <Pressable onPress={goAuthLogin} accessibilityRole="button">
-              <Text style={styles.linkMuted}>I already have an account</Text>
+              <Text style={styles.linkMuted}>{ru.splash.haveAccount}</Text>
             </Pressable>
           </View>
         </View>
@@ -131,13 +130,13 @@ export const SplashScreen = ({ navigation }: Props) => {
           <View
             style={[styles.pageInner, { paddingTop: 8 + insets.top, paddingBottom: bottomPad, gap: 12 }]}
           >
-            <Text style={styles.headline2}>Stay protected in seconds</Text>
-            <Text style={styles.subHead}>Everything is ready before you sign in.</Text>
+            <Text style={styles.headline2}>{ru.splash.staySafeTitle}</Text>
+            <Text style={styles.subHead}>{ru.splash.staySafeSub}</Text>
 
             <View style={styles.featureList}>
-              <FeatureRow Icon={Zap} label="One-tap SOS activation" />
-              <FeatureRow Icon={MapPin} label="Real-time geolocation sharing" />
-              <FeatureRow Icon={ReceiptText} label="Emergency history & billing transparency" />
+              <FeatureRow Icon={Zap} label={ru.splash.featSos} />
+              <FeatureRow Icon={MapPin} label={ru.splash.featGeo} />
+              <FeatureRow Icon={ReceiptText} label={ru.splash.featHistory} />
             </View>
 
             <View style={styles.flexSpacer} />
@@ -147,10 +146,10 @@ export const SplashScreen = ({ navigation }: Props) => {
               <View style={[styles.dot, { backgroundColor: C.lime }]} />
             </View>
 
-            <GradientCta label="Continue to Sign in" onPress={goAuthLogin} />
+            <GradientCta label={ru.splash.continueSignIn} onPress={goAuthLogin} />
 
             <Pressable onPress={goAuthLogin} accessibilityRole="button" style={styles.skipWrap}>
-              <Text style={styles.linkMuted}>Skip</Text>
+              <Text style={styles.linkMuted}>{ru.splash.skip}</Text>
             </Pressable>
           </View>
         </View>

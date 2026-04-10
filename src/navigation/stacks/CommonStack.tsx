@@ -12,34 +12,35 @@ import { OrganizationRequestSubmittedScreen } from "../../screens/common/Organiz
 import { OrganizationVenuesScreen } from "../../screens/common/OrganizationVenuesScreen";
 import { CreateVenueScreen } from "../../screens/common/CreateVenueScreen";
 import { appStackScreenOptions } from "../ui/AppStackShell";
+import { ru } from "../../locale/ru";
 
 const Stack = createNativeStackNavigator<CommonStackParamList>();
 
 export const CommonStack = () => (
   <Stack.Navigator screenOptions={appStackScreenOptions}>
-    <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: "Profile" }} />
+    <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: ru.nav.profile }} />
     <Stack.Screen
       name="NetworkOffline"
       component={NetworkOfflineScreen}
-      options={{ title: "Offline" }}
+      options={{ title: ru.nav.offline }}
     />
-    <Stack.Screen name="Forbidden" component={ForbiddenScreen} options={{ title: "Access Denied" }} />
-    <Stack.Screen name="Terms" component={TermsScreen} options={{ title: "Terms of Service" }} />
-    <Stack.Screen name="Privacy" component={PrivacyScreen} options={{ title: "Privacy Policy" }} />
+    <Stack.Screen name="Forbidden" component={ForbiddenScreen} options={{ title: ru.nav.accessDenied }} />
+    <Stack.Screen name="Terms" component={TermsScreen} options={{ title: ru.nav.terms }} />
+    <Stack.Screen name="Privacy" component={PrivacyScreen} options={{ title: ru.nav.privacy }} />
     <Stack.Screen
       name="MyOrganizations"
       component={MyOrganizationsScreen}
-      options={{ title: "My Organizations" }}
+      options={{ title: ru.nav.myOrganizations }}
     />
     <Stack.Screen
       name="RequestNewOrganization"
       component={RequestNewOrganizationScreen}
-      options={{ title: "Request New Organization" }}
+      options={{ title: ru.nav.requestOrg }}
     />
     <Stack.Screen
       name="OrganizationRequestSubmitted"
       component={OrganizationRequestSubmittedScreen}
-      options={{ title: "Request Submitted" }}
+      options={{ title: ru.nav.requestSubmitted }}
     />
     <Stack.Screen
       name="OrganizationVenues"
@@ -49,7 +50,7 @@ export const CommonStack = () => (
     <Stack.Screen
       name="CreateVenue"
       component={CreateVenueScreen}
-      options={{ title: "Add Venue" }}
+      options={{ title: ru.nav.addVenue }}
     />
   </Stack.Navigator>
 );

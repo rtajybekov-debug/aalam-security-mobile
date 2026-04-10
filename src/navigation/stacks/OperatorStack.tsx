@@ -6,6 +6,7 @@ import { OperatorSessionDetailsScreen } from "../../screens/operator/OperatorSes
 import { OperatorLiveMapScreen } from "../../screens/operator/OperatorLiveMapScreen";
 import { OperatorResolveModalScreen } from "../../screens/operator/OperatorResolveModalScreen";
 import { appStackScreenOptions } from "../ui/AppStackShell";
+import { ru } from "../../locale/ru";
 
 const Stack = createNativeStackNavigator<OperatorStackParamList>();
 
@@ -15,17 +16,17 @@ export const OperatorStack = () => (
     <Stack.Screen
       name="OperatorSessionDetails"
       component={OperatorSessionDetailsScreen}
-      options={{ title: "Session Details" }}
+      options={{ title: ru.nav.sessionDetails }}
     />
     <Stack.Screen
       name="OperatorLiveMap"
       component={OperatorLiveMapScreen}
-      options={{ title: "Live Map" }}
+      options={{ title: ru.nav.liveMap }}
     />
     <Stack.Screen
       name="OperatorResolveModal"
       component={OperatorResolveModalScreen}
-      options={{ title: "Resolve Session", presentation: "modal" }}
+      options={{ title: ru.nav.resolveSession, presentation: "modal" }}
     />
   </Stack.Navigator>
 );

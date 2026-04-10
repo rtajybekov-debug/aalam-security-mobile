@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, PropsWithChildren } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AlertTriangle } from "lucide-react-native";
+import { ru } from "../../locale/ru";
 
 interface State {
   hasError: boolean;
@@ -25,17 +26,17 @@ export class AppErrorBoundary extends Component<PropsWithChildren, State> {
           <View style={styles.iconWrap}>
             <AlertTriangle size={32} color="#DC2626" strokeWidth={2} />
           </View>
-          <Text style={styles.title}>Something went wrong</Text>
+          <Text style={styles.title}>{ru.misc.errorTitle}</Text>
           <Text style={styles.message}>
-            {this.state.error?.message ?? "An unexpected error occurred. Please restart the app."}
+            {this.state.error?.message ?? ru.misc.errorFallback}
           </Text>
           <Pressable
             style={({ pressed }) => [styles.button, pressed && { opacity: 0.8 }]}
             onPress={() => this.setState({ hasError: false, error: null })}
             accessibilityRole="button"
-            accessibilityLabel="Dismiss error and continue"
+            accessibilityLabel={ru.misc.tryAgainA11y}
           >
-            <Text style={styles.buttonText}>Try again</Text>
+            <Text style={styles.buttonText}>{ru.misc.tryAgain}</Text>
           </Pressable>
         </View>
       );

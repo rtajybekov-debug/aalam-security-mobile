@@ -23,6 +23,7 @@ import {
   kyrgyzPhoneRequiredSchema,
   sanitizeKyrgyzPhoneInput,
 } from "../../lib/kyrgyzPhone";
+import { ru } from "../../locale/ru";
 
 type Props = NativeStackScreenProps<CommonStackParamList, "RequestNewOrganization">;
 type OrganizationType = "Corporate" | "Non-profit" | "Government";
@@ -30,27 +31,33 @@ type BranchDraft = { id: string; name: string; address: string };
 
 const ORGANIZATION_TYPES: OrganizationType[] = ["Corporate", "Non-profit", "Government"];
 
+const TYPE_LABELS: Record<OrganizationType, string> = {
+  Corporate: ru.createOrgForm.typeCorporate,
+  "Non-profit": ru.createOrgForm.typeNonProfit,
+  Government: ru.createOrgForm.typeGov,
+};
+
 const organizationRequestSchema = z.object({
-  organizationName: z.string().trim().min(1, "Organization name is required"),
+  organizationName: z.string().trim().min(1, ru.createOrgForm.orgNameRequired),
   organizationType: z.enum(["Corporate", "Non-profit", "Government"]),
   branches: z
     .array(
       z.object({
-        name: z.string().trim().min(1, "Each branch needs a name"),
-        address: z.string().trim().min(1, "Each branch needs an address"),
+        name: z.string().trim().min(1, ru.createOrgForm.branchNameRequired),
+        address: z.string().trim().min(1, ru.createOrgForm.branchAddrRequired),
       }),
     )
-    .min(1, "Add at least one branch"),
+    .min(1, ru.createOrgForm.minBranches),
   contactEmail: z
     .string()
     .trim()
-    .min(1, "Contact email is required")
-    .email("Enter a valid email")
+    .min(1, ru.createOrgForm.contactEmailRequired)
+    .email(ru.createOrgForm.emailInvalid)
     .transform((s) => s.toLowerCase()),
   contactPhone: kyrgyzPhoneRequiredSchema,
   description: z.string().trim().optional(),
   isAuthorized: z.boolean().refine((v) => v === true, {
-    message: "Confirm that you are authorized to represent this organization",
+    message: ru.createOrgForm.authConfirm,
   }),
 });
 
@@ -122,11 +129,11 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
       });
 
       toastBus.show({
-        message: `${result.assets.length} file(s) attached.`,
+        message: `${ru.createOrgForm.filesAttached} ${result.assets.length}`,
         severity: "success",
       });
     } catch {
-      toastBus.show({ message: "Failed to pick documents.", severity: "error" });
+      toastBus.show({ message: ru.createOrgForm.pickDocFail, severity: "error" });
     }
   };
 
@@ -146,7 +153,7 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
     });
 
     if (!parsed.success) {
-      const msg = parsed.error.issues[0]?.message ?? "Check the form and try again.";
+      const msg = parsed.error.issues[0]?.message ?? ru.createOrgForm.formError;
       toastBus.show({ message: msg, severity: "warning" });
       return;
     }
@@ -173,10 +180,10 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
               }))
             : undefined,
       });
-      toastBus.show({ message: "Request submitted.", severity: "success" });
+      toastBus.show({ message: ru.createOrgForm.submitOk, severity: "success" });
       navigation.navigate("OrganizationRequestSubmitted");
     } catch {
-      toastBus.show({ message: "Failed to submit request.", severity: "error" });
+      toastBus.show({ message: ru.createOrgForm.submitFail, severity: "error" });
     } finally {
       setIsSubmitting(false);
     }
@@ -192,25 +199,26 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>Request New Organization</Text>
-        <Text style={[styles.intro, { color: tokens.colors.onSurfaceMuted }]}>
-          Submit an application to create your organization and its first branch. Our team will
-          review your request.
-        </Text>
+        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.createOrgForm.title}</Text>
+        <Text style={[styles.intro, { color: tokens.colors.onSurfaceMuted }]}>{ru.createOrgForm.intro}</Text>
 
         <AppInput
-          label="Organization name (required)"
+          label={ru.createOrgForm.orgNameLabel}
           value={organizationName}
           onChangeText={setOrganizationName}
           autoComplete="organization"
         />
 
-        <Text style={[styles.fieldLabel, { color: tokens.colors.onSurfaceMuted }]}>Organization type</Text>
+        <Text style={[styles.fieldLabel, { color: tokens.colors.onSurfaceMuted }]}>
+          {ru.createOrgForm.orgTypeLabel}
+        </Text>
         <Pressable
           style={[styles.selectRow, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border }]}
           onPress={() => setIsTypeOpen((v) => !v)}
         >
-          <Text style={[styles.selectValue, { color: tokens.colors.onSurface }]}>{organizationType}</Text>
+          <Text style={[styles.selectValue, { color: tokens.colors.onSurface }]}>
+            {TYPE_LABELS[organizationType]}
+          </Text>
           <Text style={[styles.chevron, { color: tokens.colors.onSurfaceMuted }]}>{isTypeOpen ? "▴" : "▾"}</Text>
         </Pressable>
         {isTypeOpen ? (
@@ -230,14 +238,16 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
                     { color: type === organizationType ? tokens.colors.primary : tokens.colors.onSurface },
                   ]}
                 >
-                  {type}
+                  {TYPE_LABELS[type]}
                 </Text>
               </Pressable>
             ))}
           </View>
         ) : null}
 
-        <Text style={[styles.fieldLabel, { color: tokens.colors.onSurfaceMuted }]}>Branches (required)</Text>
+        <Text style={[styles.fieldLabel, { color: tokens.colors.onSurfaceMuted }]}>
+          {ru.createOrgForm.branchesLabel}
+        </Text>
         <View style={styles.branchesWrap}>
           {branches.map((branch, index) => (
             <View
@@ -249,21 +259,23 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
             >
               <View style={styles.branchCardHeader}>
                 <Text style={[styles.branchTitle, { color: tokens.colors.onSurface }]}>
-                  Branch {index + 1}
+                  {ru.createOrgForm.branchTitle} {index + 1}
                 </Text>
                 {branches.length > 1 ? (
                   <Pressable onPress={() => removeBranch(branch.id)} hitSlop={8}>
-                    <Text style={[styles.removeBranchText, { color: tokens.colors.danger }]}>Remove</Text>
+                    <Text style={[styles.removeBranchText, { color: tokens.colors.danger }]}>
+                      {ru.createOrgForm.remove}
+                    </Text>
                   </Pressable>
                 ) : null}
               </View>
               <AppInput
-                label="Branch name (required)"
+                label={ru.createOrgForm.branchNameLabel}
                 value={branch.name}
                 onChangeText={(v) => updateBranch(branch.id, "name", v)}
               />
               <AppInput
-                label="Branch address (required)"
+                label={ru.createOrgForm.branchAddrLabel}
                 value={branch.address}
                 onChangeText={(v) => updateBranch(branch.id, "address", v)}
                 autoComplete="street-address"
@@ -271,15 +283,10 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
             </View>
           ))}
         </View>
-        <ActionButton
-          variant="secondary"
-          size="small"
-          label="+ Add another branch"
-          onPress={addBranch}
-        />
+        <ActionButton variant="secondary" size="small" label={ru.createOrgForm.addBranch} onPress={addBranch} />
 
         <AppInput
-          label="Contact email (required)"
+          label={ru.createOrgForm.contactEmailLabel}
           value={contactEmail}
           onChangeText={setContactEmail}
           keyboardType="email-address"
@@ -287,7 +294,7 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
           autoCorrect={false}
         />
         <AppInput
-          label="Contact phone (required)"
+          label={ru.createOrgForm.contactPhoneLabel}
           value={contactPhone}
           onChangeText={(v) => setContactPhone(sanitizeKyrgyzPhoneInput(v))}
           keyboardType="phone-pad"
@@ -297,9 +304,11 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
         />
 
         <View style={styles.descriptionBlock}>
-          <Text style={[styles.fieldLabel, { color: tokens.colors.onSurfaceMuted }]}>Description (optional)</Text>
+          <Text style={[styles.fieldLabel, { color: tokens.colors.onSurfaceMuted }]}>
+            {ru.createOrgForm.descOptional}
+          </Text>
           <AppInput
-            label="Add context (optional)"
+            label={ru.createOrgForm.contextLabel}
             value={description}
             onChangeText={setDescription}
           />
@@ -308,12 +317,12 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
               style={[styles.uploadButton, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border }]}
               onPress={() => void onPickDocuments()}
               accessibilityRole="button"
-              accessibilityLabel="Upload supporting documents"
+              accessibilityLabel={ru.createOrgForm.uploadA11y}
             >
-              <Text style={[styles.uploadButtonText, { color: "#93C5FD" }]}>Add attachment</Text>
+              <Text style={[styles.uploadButtonText, { color: "#93C5FD" }]}>{ru.createOrgForm.addAttachment}</Text>
             </Pressable>
             <Text style={[styles.uploadHint, { color: tokens.colors.onSurfaceMuted }]}>
-              Accepted: PDF, DOC, DOCX
+              {ru.createOrgForm.filesHint}
             </Text>
           </View>
           {attachments.length > 0 ? (
@@ -330,7 +339,9 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
                     {asset.name ?? "document"}
                   </Text>
                   <Pressable onPress={() => removeAttachment(asset.uri)} hitSlop={8}>
-                    <Text style={[styles.removeAttachmentText, { color: tokens.colors.danger }]}>Remove</Text>
+                    <Text style={[styles.removeAttachmentText, { color: tokens.colors.danger }]}>
+                      {ru.createOrgForm.remove}
+                    </Text>
                   </Pressable>
                 </View>
               ))}
@@ -343,24 +354,28 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
             {isAuthorized ? <Text style={styles.checkboxTick}>✓</Text> : null}
           </View>
           <Text style={[styles.checkboxText, { color: tokens.colors.onSurfaceMuted }]}>
-            I confirm that I am authorized to represent this organization.
+            {ru.createOrgForm.authCheckbox}
           </Text>
         </Pressable>
 
         <ActionButton
-          label={isSubmitting ? "Submitting..." : "Submit Request"}
+          label={isSubmitting ? ru.createOrgForm.submitting : ru.createOrgForm.submit}
           onPress={() => void onSubmit()}
           disabled={!requiredDone || isSubmitting}
           loading={isSubmitting}
           style={styles.submit}
         />
         <Text style={[styles.caption, { color: tokens.colors.onSurfaceMuted }]}>
-          Enabled when required fields are completed and checkbox is checked.
+          {ru.createOrgForm.submitCaption}
         </Text>
         <View style={styles.legalRow}>
-          <Text style={[styles.legalLink, { color: tokens.colors.onSurfaceMuted }]}>Terms</Text>
+          <Text style={[styles.legalLink, { color: tokens.colors.onSurfaceMuted }]}>
+            {ru.createOrgForm.legalTerms}
+          </Text>
           <Text style={[styles.legalDot, { color: tokens.colors.border }]}>·</Text>
-          <Text style={[styles.legalLink, { color: tokens.colors.onSurfaceMuted }]}>Privacy</Text>
+          <Text style={[styles.legalLink, { color: tokens.colors.onSurfaceMuted }]}>
+            {ru.createOrgForm.legalPrivacy}
+          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

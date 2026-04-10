@@ -18,9 +18,10 @@ import { AppInput } from "../../components/ui/AppInput";
 import { ActionButton } from "../../components/ui/ActionButton";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
 
 const schema = z.object({
-  email: z.string().email("Enter a valid email"),
+  email: z.string().email(ru.validation.emailInvalid),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -41,12 +42,12 @@ export const ForgotPasswordScreen = ({ navigation }: Props) => {
     try {
       await authApi.forgotPassword(values.email);
       toastBus.show({
-        message: "If an account exists, you will receive reset instructions.",
+        message: ru.auth.resetEmailHint,
         severity: "success",
       });
       navigation.navigate("Login");
     } catch {
-      toastBus.show({ message: "Request failed. Try again.", severity: "error" });
+      toastBus.show({ message: ru.auth.requestFailed, severity: "error" });
     }
   };
 
@@ -62,10 +63,10 @@ export const ForgotPasswordScreen = ({ navigation }: Props) => {
       >
         <View style={styles.header}>
           <Text style={[styles.title, { color: tokens.colors.onSurface }]}>
-            Password recovery
+            {ru.auth.recoveryTitle}
           </Text>
           <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
-            Enter your email to receive a reset link
+            {ru.auth.recoverySubtitle}
           </Text>
         </View>
 
@@ -75,7 +76,7 @@ export const ForgotPasswordScreen = ({ navigation }: Props) => {
             name="email"
             render={({ field: { onChange, value } }) => (
               <AppInput
-                label="Email"
+                label={ru.auth.email}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 returnKeyType="done"
@@ -89,7 +90,7 @@ export const ForgotPasswordScreen = ({ navigation }: Props) => {
           />
 
           <ActionButton
-            label={isSubmitting ? "Sending..." : "Send reset link"}
+            label={isSubmitting ? ru.auth.sending : ru.auth.sendResetLink}
             disabled={isSubmitting}
             loading={isSubmitting}
             onPress={handleSubmit(onSubmit)}
@@ -103,7 +104,7 @@ export const ForgotPasswordScreen = ({ navigation }: Props) => {
           accessibilityRole="link"
         >
           <Text style={[styles.backText, { color: tokens.colors.onSurfaceMuted }]}>
-            Back to Login
+            {ru.auth.backToLogin}
           </Text>
         </Pressable>
       </ScrollView>

@@ -5,6 +5,7 @@ import { AdminTabs } from "../tabs/AdminTabs";
 import { AdminCreateOperatorScreen } from "../../screens/admin/AdminCreateOperatorScreen";
 import { AdminCreateOperatorSuccessScreen } from "../../screens/admin/AdminCreateOperatorSuccessScreen";
 import { appStackScreenOptions } from "../ui/AppStackShell";
+import { ru } from "../../locale/ru";
 
 const Stack = createNativeStackNavigator<AdminStackParamList>();
 
@@ -14,12 +15,12 @@ export const AdminStack = () => (
     <Stack.Screen
       name="AdminCreateOperator"
       component={AdminCreateOperatorScreen}
-      options={{ title: "Create Operator" }}
+      options={{ title: ru.nav.createOperator }}
     />
     <Stack.Screen
       name="AdminCreateOperatorSuccess"
       component={AdminCreateOperatorSuccessScreen}
-      options={{ title: "Success" }}
+      options={{ title: ru.nav.success }}
     />
   </Stack.Navigator>
 );

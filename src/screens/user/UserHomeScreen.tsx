@@ -22,6 +22,8 @@ import { emergencyApi } from "../../api/modules/emergency";
 import { organizationApi } from "../../api/modules/organization";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
+import { ru } from "../../locale/ru";
+import type { EmergencyStatus } from "../../types/emergency";
 
 /** Pencil ZVLRX — Home / Dashboard */
 const P = {
@@ -42,6 +44,13 @@ type Props = CompositeScreenProps<
   BottomTabScreenProps<UserTabParamList, "Home">,
   NativeStackScreenProps<UserStackParamList>
 >;
+
+const STATUS_RU: Record<EmergencyStatus, string> = {
+  NEW: ru.emergencyStatus.NEW,
+  ASSIGNED: ru.emergencyStatus.ASSIGNED,
+  IN_PROGRESS: ru.emergencyStatus.IN_PROGRESS,
+  CLOSED: ru.emergencyStatus.CLOSED,
+};
 
 export const UserHomeScreen = ({ navigation }: Props) => {
   const { tokens } = useAppTheme();
@@ -81,8 +90,7 @@ export const UserHomeScreen = ({ navigation }: Props) => {
     }
     if (!canUseApp) {
       toastBus.show({
-        message:
-          "Activate an individual plan or join your assigned organization venue to use SOS.",
+        message: ru.userHome.toastNeedAccess,
         severity: "warning",
       });
       return;
@@ -93,7 +101,7 @@ export const UserHomeScreen = ({ navigation }: Props) => {
         currentVenueId ? { venueId: currentVenueId } : undefined,
       );
       setActiveSession(session);
-      toastBus.show({ message: "Emergency alert sent.", severity: "success" });
+      toastBus.show({ message: ru.userHome.sosSent, severity: "success" });
       navigation.navigate("UserActiveEmergency");
     } catch (err: unknown) {
       setButtonState("idle");
@@ -109,15 +117,15 @@ export const UserHomeScreen = ({ navigation }: Props) => {
         "message" in err.response.data &&
         typeof (err.response.data as { message: unknown }).message === "string"
           ? (err.response.data as { message: string }).message
-          : "Failed to trigger SOS. Try again.";
+          : ru.userHome.sosFail;
       toastBus.show({ message, severity: "error" });
     }
   };
 
   const sessionChip =
     activeSession && activeSession.status
-      ? `Session: ${activeSession.status}`
-      : "Session: hidden";
+      ? `${ru.userHome.sessionPrefix}${STATUS_RU[activeSession.status] ?? activeSession.status}`
+      : ru.userHome.sessionHidden;
 
   return (
     <SafeAreaView
@@ -134,17 +142,17 @@ export const UserHomeScreen = ({ navigation }: Props) => {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.homeTitle}>Home</Text>
+        <Text style={styles.homeTitle}>{ru.userHome.title}</Text>
         {!canUseApp ? (
           <>
             <View style={[styles.inactiveCard, { borderColor: P.border, backgroundColor: P.card }]}>
               <Text style={styles.inactiveTitle}>
-                {inactiveReason === "no_access" ? "Account inactive" : "Branch assignment required"}
+                {inactiveReason === "no_access" ? ru.userHome.inactiveAccount : ru.userHome.inactiveBranch}
               </Text>
               <Text style={[styles.inactiveMessage, { color: P.muted }]}>
                 {inactiveReason === "no_access"
-                  ? "You need an active subscription or to join an organization to use the app."
-                  : "You are in an organization, but SOS can only be triggered from your assigned branch."}
+                  ? ru.userHome.msgNoAccess
+                  : ru.userHome.msgNeedBranch}
               </Text>
             </View>
             {hasOrganization ? (
@@ -154,9 +162,9 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                 accessibilityRole="button"
               >
                 <View style={styles.venueTextWrap}>
-                  <Text style={styles.venueTitle}>My organization</Text>
+                  <Text style={styles.venueTitle}>{ru.userHome.myOrg}</Text>
                   <Text style={[styles.venueSub, { color: P.sessionMuted }]} numberOfLines={1}>
-                    {memberships[0]?.organization.name ?? "Branches & membership"}
+                    {memberships[0]?.organization.name ?? ru.userHome.myOrgSubInactive}
                   </Text>
                 </View>
                 <Text style={[styles.venueArrow, { color: "#C4F82A" }]}>→</Text>
@@ -168,7 +176,7 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                 style={styles.primaryCta}
                 accessibilityRole="button"
               >
-                <Text style={styles.primaryCtaText}>Join an organization</Text>
+                <Text style={styles.primaryCtaText}>{ru.userHome.joinOrg}</Text>
                 <Text style={styles.primaryCtaText}>→</Text>
               </Pressable>
               <Pressable
@@ -176,7 +184,7 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                 style={[styles.secondaryCta, { borderColor: P.border }]}
                 accessibilityRole="button"
               >
-                <Text style={styles.secondaryCtaText}>Create new organization</Text>
+                <Text style={styles.secondaryCtaText}>{ru.userHome.createOrg}</Text>
                 <Text style={styles.secondaryCtaArrow}>→</Text>
               </Pressable>
               <Pressable
@@ -184,7 +192,7 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                 style={[styles.secondaryCta, { borderColor: P.border }]}
                 accessibilityRole="button"
               >
-                <Text style={styles.secondaryCtaText}>Choose a subscription plan</Text>
+                <Text style={styles.secondaryCtaText}>{ru.userHome.choosePlan}</Text>
                 <Text style={styles.secondaryCtaArrow}>→</Text>
               </Pressable>
             </View>
@@ -193,24 +201,24 @@ export const UserHomeScreen = ({ navigation }: Props) => {
           <>
             <View style={[styles.statusCard, { borderColor: P.border, backgroundColor: P.card }]}>
               <View style={styles.statusTopRow}>
-                <Text style={[styles.statusLabel, { color: P.muted }]}>Status</Text>
+                <Text style={[styles.statusLabel, { color: P.muted }]}>{ru.userHome.status}</Text>
                 <View style={styles.readyBadge}>
-                  <Text style={styles.readyText}>Ready</Text>
+                  <Text style={styles.readyText}>{ru.userHome.ready}</Text>
                 </View>
               </View>
               <Text style={styles.orgLine}>
                 {hasIndividualSubscription && !hasAssignedVenue
-                  ? "Organization: Individual plan"
-                  : `Organization: ${memberships[0]?.organization.name ?? "—"}`}
+                  ? `${ru.userHome.orgPrefix} ${ru.userHome.individualPlan}`
+                  : `${ru.userHome.orgPrefix} ${memberships[0]?.organization.name ?? "—"}`}
               </Text>
               <Text style={[styles.assignedLine, { color: P.muted }]}>
                 {hasIndividualSubscription && !hasAssignedVenue
-                  ? "Assigned venue: Personal mode"
-                  : `Assigned venue: ${currentVenueName ?? "Not assigned"}`}
+                  ? `${ru.userHome.venuePrefix} ${ru.userHome.personalMode}`
+                  : `${ru.userHome.venuePrefix} ${currentVenueName ?? ru.userHome.notAssigned}`}
               </Text>
               {assignedVenue?.address ? (
                 <Text style={[styles.locationLine, { color: P.sessionMuted }]}>
-                  Location: {assignedVenue.address}
+                  {ru.userHome.locationPrefix} {assignedVenue.address}
                 </Text>
               ) : null}
             </View>
@@ -222,9 +230,9 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                 accessibilityRole="button"
               >
                 <View style={styles.venueTextWrap}>
-                  <Text style={styles.venueTitle}>My organization</Text>
+                  <Text style={styles.venueTitle}>{ru.userHome.myOrg}</Text>
                   <Text style={[styles.venueSub, { color: P.sessionMuted }]} numberOfLines={1}>
-                    {memberships[0]?.organization.name ?? "View branches & role"}
+                    {memberships[0]?.organization.name ?? ru.userHome.myOrgSubActive}
                   </Text>
                 </View>
                 <Text style={[styles.venueArrow, { color: "#C4F82A" }]}>→</Text>
@@ -233,7 +241,7 @@ export const UserHomeScreen = ({ navigation }: Props) => {
 
             <View style={styles.sosBlock}>
               <SosEmergencyButton state={buttonState} onTrigger={onStartSos} dashboardStyle />
-              <Text style={[styles.hint, { color: P.muted }]}>Long press to trigger emergency</Text>
+              <Text style={[styles.hint, { color: P.muted }]}>{ru.userHome.sosHint}</Text>
             </View>
 
             <Pressable
@@ -242,8 +250,8 @@ export const UserHomeScreen = ({ navigation }: Props) => {
               accessibilityRole="button"
             >
               <View style={styles.venueTextWrap}>
-                <Text style={styles.venueTitle}>Venue details</Text>
-                <Text style={[styles.venueSub, { color: P.sessionMuted }]}>Tap to see venue info</Text>
+                <Text style={styles.venueTitle}>{ru.userHome.venueDetails}</Text>
+                <Text style={[styles.venueSub, { color: P.sessionMuted }]}>{ru.userHome.venueDetailsSub}</Text>
               </View>
               <Text style={[styles.venueArrow, { color: "#C4F82A" }]}>→</Text>
             </Pressable>
@@ -254,16 +262,14 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                 style={[styles.metaChip, { borderColor: P.border, backgroundColor: P.card }]}
                 accessibilityRole="button"
               >
-                <Text style={[styles.metaChipText, { color: P.textBlue }]}>History</Text>
+                <Text style={[styles.metaChipText, { color: P.textBlue }]}>{ru.userHome.history}</Text>
               </Pressable>
               <View style={[styles.metaChip, { borderColor: P.border, backgroundColor: P.card }]}>
                 <Text style={[styles.metaChipText, { color: P.sessionMuted }]}>{sessionChip}</Text>
               </View>
             </View>
 
-            <Text style={[styles.footerNote, { color: P.caption }]}>
-              If emergency starts, session badge appears here.
-            </Text>
+            <Text style={[styles.footerNote, { color: P.caption }]}>{ru.userHome.footerNote}</Text>
           </>
         )}
       </ScrollView>
