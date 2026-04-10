@@ -4,6 +4,7 @@ import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useQuery } from "@tanstack/react-query";
 import {
+  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -19,7 +20,11 @@ import { useUserSessionStore } from "../../stores/userSessionStore";
 import { useEmergencyStore } from "../../stores/emergencyStore";
 import { SosEmergencyButton } from "../../components/sos/SosEmergencyButton";
 import { emergencyApi } from "../../api/modules/emergency";
-import { organizationApi } from "../../api/modules/organization";
+import {
+  formatVenueAddress,
+  organizationApi,
+  type Venue,
+} from "../../api/modules/organization";
 import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
 import { ru } from "../../locale/ru";
@@ -59,11 +64,21 @@ export const UserHomeScreen = ({ navigation }: Props) => {
   const currentVenueName = useUserSessionStore((state) => state.currentVenueName);
   const hasIndividualSubscription = useUserSessionStore((state) => state.hasIndividualSubscription);
   const profileUser = useAuthStore((state) => state.user);
+  const isBootstrapped = useAuthStore((state) => state.isBootstrapped);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const userId = useAuthStore((state) => state.user?.id);
   const activeSession = useEmergencyStore((state) => state.activeSession);
   const setActiveSession = useEmergencyStore((state) => state.setActiveSession);
-  const { data: memberships = [] } = useQuery({
-    queryKey: ["organizations"],
+  const loadOrganizations = Boolean(isBootstrapped && isAuthenticated && userId);
+  const {
+    data: memberships = [],
+    isLoading: orgsLoading,
+    isError: orgsError,
+    refetch: refetchOrgs,
+  } = useQuery({
+    queryKey: ["organizations", userId],
     queryFn: organizationApi.getMyOrganizations,
+    enabled: loadOrganizations,
   });
   const [buttonState, setButtonState] = React.useState<"idle" | "sending" | "active" | "disabled">(
     activeSession ? "active" : "idle",
@@ -74,13 +89,40 @@ export const UserHomeScreen = ({ navigation }: Props) => {
   }, [activeSession]);
 
   const hasOrganization = memberships.length > 0;
+  const isBusinessOwner = memberships.some((m) => {
+    const role = (m.role ?? "").toUpperCase();
+    const orgType = (m.organization.type ?? "").toUpperCase();
+    return role === "OWNER" && orgType === "BUSINESS";
+  });
+  const ownerMembership = memberships.find((m) => {
+    const role = (m.role ?? "").toUpperCase();
+    const orgType = (m.organization.type ?? "").toUpperCase();
+    return role === "OWNER" && orgType === "BUSINESS";
+  });
+  const ownerVenues = React.useMemo<Venue[]>(
+    () => ownerMembership?.organization.venues ?? [],
+    [ownerMembership?.organization.venues],
+  );
+
+  const [sosMode, setSosMode] = React.useState<"gps" | "venue">("gps");
+  const [selectedOwnerVenueId, setSelectedOwnerVenueId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!isBusinessOwner || ownerVenues.length === 0) return;
+    setSelectedOwnerVenueId((prev) => {
+      if (prev && ownerVenues.some((v) => v.id === prev)) return prev;
+      return ownerVenues[0]!.id;
+    });
+  }, [isBusinessOwner, ownerVenues]);
+
   const assignedVenue = memberships
     .flatMap((member) => member.organization.venues ?? [])
     .find((venue) => venue.id === currentVenueId);
+  const venueAddressLine = assignedVenue ? formatVenueAddress(assignedVenue) : "";
   const hasAssignedVenue = Boolean(currentVenueId);
   const serverIndividual = Boolean(profileUser?.individualSubscriptionActive);
   const canUseApp =
-    serverIndividual || hasIndividualSubscription || hasAssignedVenue;
+    serverIndividual || hasIndividualSubscription || hasAssignedVenue || isBusinessOwner;
   const inactiveReason = !hasOrganization && !hasIndividualSubscription ? "no_access" : "needs_assignment";
 
   const onStartSos = async () => {
@@ -97,9 +139,27 @@ export const UserHomeScreen = ({ navigation }: Props) => {
     }
     setButtonState("sending");
     try {
-      const session = await emergencyApi.start(
-        currentVenueId ? { venueId: currentVenueId } : undefined,
-      );
+      let startOpts: { venueId?: string } | undefined;
+
+      if (isBusinessOwner) {
+        if (sosMode === "venue") {
+          if (!selectedOwnerVenueId) {
+            setButtonState("idle");
+            toastBus.show({
+              message: ru.userHome.ownerNoVenueSelected,
+              severity: "warning",
+            });
+            return;
+          }
+          startOpts = { venueId: selectedOwnerVenueId };
+        } else {
+          startOpts = undefined;
+        }
+      } else {
+        startOpts = currentVenueId ? { venueId: currentVenueId } : undefined;
+      }
+
+      const session = await emergencyApi.start(startOpts);
       setActiveSession(session);
       toastBus.show({ message: ru.userHome.sosSent, severity: "success" });
       navigation.navigate("UserActiveEmergency");
@@ -143,7 +203,21 @@ export const UserHomeScreen = ({ navigation }: Props) => {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.homeTitle}>{ru.userHome.title}</Text>
-        {!canUseApp ? (
+        {loadOrganizations && orgsLoading ? (
+          <View style={styles.orgLoadingBlock}>
+            <ActivityIndicator size="large" color="#C4F82A" />
+            <Text style={[styles.orgLoadingText, { color: P.muted }]}>{ru.misc.loading}</Text>
+          </View>
+        ) : orgsError ? (
+          <Pressable
+            onPress={() => void refetchOrgs()}
+            style={[styles.orgErrorCard, { borderColor: P.border, backgroundColor: P.card }]}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.orgErrorTitle, { color: "#FFFFFF" }]}>{ru.userHome.orgLoadError}</Text>
+            <Text style={[styles.orgErrorRetry, { color: "#C4F82A" }]}>{ru.misc.tryAgain}</Text>
+          </Pressable>
+        ) : !canUseApp ? (
           <>
             <View style={[styles.inactiveCard, { borderColor: P.border, backgroundColor: P.card }]}>
               <Text style={styles.inactiveTitle}>
@@ -216,9 +290,9 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                   ? `${ru.userHome.venuePrefix} ${ru.userHome.personalMode}`
                   : `${ru.userHome.venuePrefix} ${currentVenueName ?? ru.userHome.notAssigned}`}
               </Text>
-              {assignedVenue?.address ? (
+              {venueAddressLine ? (
                 <Text style={[styles.locationLine, { color: P.sessionMuted }]}>
-                  {ru.userHome.locationPrefix} {assignedVenue.address}
+                  {ru.userHome.locationPrefix} {venueAddressLine}
                 </Text>
               ) : null}
             </View>
@@ -241,20 +315,127 @@ export const UserHomeScreen = ({ navigation }: Props) => {
 
             <View style={styles.sosBlock}>
               <SosEmergencyButton state={buttonState} onTrigger={onStartSos} dashboardStyle />
+              {isBusinessOwner ? (
+                <View style={styles.ownerSosSection}>
+                  <View style={styles.ownerModeRow}>
+                    <Pressable
+                      onPress={() => setSosMode("gps")}
+                      style={[
+                        styles.ownerModePill,
+                        { borderColor: P.border, backgroundColor: P.card },
+                        sosMode === "gps" && styles.ownerModePillActive,
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: sosMode === "gps" }}
+                    >
+                      <Text
+                        style={[
+                          styles.ownerModePillText,
+                          { color: sosMode === "gps" ? "#0A0A0A" : P.muted },
+                        ]}
+                        numberOfLines={2}
+                      >
+                        {ru.userHome.sosModeGps}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => setSosMode("venue")}
+                      style={[
+                        styles.ownerModePill,
+                        { borderColor: P.border, backgroundColor: P.card },
+                        sosMode === "venue" && styles.ownerModePillActive,
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: sosMode === "venue" }}
+                    >
+                      <Text
+                        style={[
+                          styles.ownerModePillText,
+                          { color: sosMode === "venue" ? "#0A0A0A" : P.muted },
+                        ]}
+                        numberOfLines={2}
+                      >
+                        {ru.userHome.sosModeVenue}
+                      </Text>
+                    </Pressable>
+                  </View>
+                  {sosMode === "venue" ? (
+                    ownerVenues.length === 0 ? (
+                      <Text style={[styles.ownerVenuesEmpty, { color: P.sessionMuted }]}>
+                        {ru.userHome.ownerVenuesEmpty}
+                      </Text>
+                    ) : (
+                      <View style={styles.ownerVenueList}>
+                        <Text style={[styles.ownerVenuesHint, { color: P.muted }]}>
+                          {ru.userHome.ownerVenuesHint}
+                        </Text>
+                        {ownerVenues.map((v) => {
+                          const selected = v.id === selectedOwnerVenueId;
+                          const line = formatVenueAddress(v);
+                          return (
+                            <Pressable
+                              key={v.id}
+                              onPress={() => setSelectedOwnerVenueId(v.id)}
+                              style={[
+                                styles.ownerVenueRow,
+                                {
+                                  borderColor: P.border,
+                                  backgroundColor: P.card,
+                                },
+                                selected && styles.ownerVenueRowSelected,
+                              ]}
+                              accessibilityRole="button"
+                              accessibilityState={{ selected }}
+                            >
+                              <View style={styles.ownerVenueRowText}>
+                                <Text
+                                  style={[styles.ownerVenueName, { color: "#FFFFFF" }]}
+                                  numberOfLines={1}
+                                >
+                                  {v.name}
+                                </Text>
+                                {line ? (
+                                  <Text
+                                    style={[styles.ownerVenueAddr, { color: P.sessionMuted }]}
+                                    numberOfLines={2}
+                                  >
+                                    {line}
+                                  </Text>
+                                ) : null}
+                              </View>
+                              <View
+                                style={[
+                                  styles.ownerVenueRadio,
+                                  {
+                                    borderColor: selected ? "#C4F82A" : P.border,
+                                    backgroundColor: selected ? "#C4F82A" : "transparent",
+                                  },
+                                ]}
+                              />
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    )
+                  ) : null}
+                </View>
+              ) : null}
               <Text style={[styles.hint, { color: P.muted }]}>{ru.userHome.sosHint}</Text>
             </View>
 
-            <Pressable
-              onPress={() => navigation.navigate("UserBindVenue")}
-              style={[styles.venueDetailsRow, { borderColor: P.border, backgroundColor: P.card }]}
-              accessibilityRole="button"
-            >
-              <View style={styles.venueTextWrap}>
-                <Text style={styles.venueTitle}>{ru.userHome.venueDetails}</Text>
-                <Text style={[styles.venueSub, { color: P.sessionMuted }]}>{ru.userHome.venueDetailsSub}</Text>
-              </View>
-              <Text style={[styles.venueArrow, { color: "#C4F82A" }]}>→</Text>
-            </Pressable>
+            {!isBusinessOwner ? (
+              <Pressable
+                onPress={() => navigation.navigate("UserBindVenue")}
+                style={[styles.venueDetailsRow, { borderColor: P.border, backgroundColor: P.card }]}
+                accessibilityRole="button"
+              >
+                <View style={styles.venueTextWrap}>
+                  <Text style={styles.venueTitle}>{ru.userHome.venueDetails}</Text>
+                  <Text style={[styles.venueSub, { color: P.sessionMuted }]}>{ru.userHome.venueDetailsSub}</Text>
+                </View>
+                <Text style={[styles.venueArrow, { color: "#C4F82A" }]}>→</Text>
+              </Pressable>
+            ) : null}
 
             <View style={styles.metaRow}>
               <Pressable
@@ -291,6 +472,31 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "700",
     marginTop: 8,
+  },
+  orgLoadingBlock: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    gap: 12,
+  },
+  orgLoadingText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  orgErrorCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    gap: 8,
+  },
+  orgErrorTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    lineHeight: 20,
+  },
+  orgErrorRetry: {
+    fontSize: 14,
+    fontWeight: "700",
   },
   inactiveCard: {
     borderRadius: 16,
@@ -426,6 +632,82 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     textAlign: "center",
+  },
+  ownerSosSection: {
+    width: "100%",
+    gap: 12,
+    marginTop: 4,
+  },
+  ownerModeRow: {
+    flexDirection: "row",
+    gap: 10,
+    width: "100%",
+  },
+  ownerModePill: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  ownerModePillActive: {
+    backgroundColor: "#C4F82A",
+    borderColor: "#C4F82A",
+  },
+  ownerModePillText: {
+    fontSize: 12,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  ownerVenueList: {
+    width: "100%",
+    gap: 8,
+  },
+  ownerVenuesHint: {
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  ownerVenuesEmpty: {
+    fontSize: 13,
+    fontWeight: "500",
+    textAlign: "center",
+    paddingVertical: 8,
+  },
+  ownerVenueRow: {
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  ownerVenueRowSelected: {
+    borderColor: "#C4F82A",
+  },
+  ownerVenueRowText: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  ownerVenueName: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  ownerVenueAddr: {
+    fontSize: 11,
+    fontWeight: "500",
+    lineHeight: 15,
+  },
+  ownerVenueRadio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
   },
   metaRow: {
     flexDirection: "row",

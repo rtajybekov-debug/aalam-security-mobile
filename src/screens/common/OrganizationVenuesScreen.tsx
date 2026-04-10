@@ -10,7 +10,7 @@ import {
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useQuery } from "@tanstack/react-query";
 import { CommonStackParamList } from "../../navigation/types";
-import { venueApi, Venue } from "../../api/modules/organization";
+import { venueApi, Venue, formatVenueAddress } from "../../api/modules/organization";
 import { ActionButton } from "../../components/ui/ActionButton";
 import { EmptyState } from "../../components/state/EmptyState";
 import { SkeletonList } from "../../components/state/SkeletonList";
@@ -26,26 +26,29 @@ const VenueCard = React.memo(
   }: {
     item: Venue;
     tokens: ReturnType<typeof useAppTheme>["tokens"];
-  }) => (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: tokens.colors.surface,
-          borderColor: tokens.colors.border,
-        },
-      ]}
-    >
-      <Text style={[styles.venueName, { color: tokens.colors.onSurface }]} numberOfLines={1}>
-        {item.name}
-      </Text>
-      {item.address ? (
-        <Text style={[styles.venueAddress, { color: tokens.colors.onSurfaceMuted }]} numberOfLines={2}>
-          {item.address}
+  }) => {
+    const addressLine = formatVenueAddress(item);
+    return (
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: tokens.colors.surface,
+            borderColor: tokens.colors.border,
+          },
+        ]}
+      >
+        <Text style={[styles.venueName, { color: tokens.colors.onSurface }]} numberOfLines={1}>
+          {item.name}
         </Text>
-      ) : null}
-    </View>
-  )
+        {addressLine ? (
+          <Text style={[styles.venueAddress, { color: tokens.colors.onSurfaceMuted }]} numberOfLines={4}>
+            {addressLine}
+          </Text>
+        ) : null}
+      </View>
+    );
+  },
 );
 VenueCard.displayName = "VenueCard";
 

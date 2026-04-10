@@ -12,6 +12,7 @@ import { ChevronRight } from "lucide-react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useQuery } from "@tanstack/react-query";
 import { CommonStackParamList } from "../../navigation/types";
+import { useAuthStore } from "../../stores/authStore";
 import { organizationApi, OrganizationMember } from "../../api/modules/organization";
 import { ActionButton } from "../../components/ui/ActionButton";
 import { EmptyState } from "../../components/state/EmptyState";
@@ -78,9 +79,11 @@ OrgCard.displayName = "OrgCard";
 
 export const MyOrganizationsScreen = ({ navigation }: Props) => {
   const { tokens } = useAppTheme();
+  const userId = useAuthStore((s) => s.user?.id);
   const { data: memberships, isLoading, isError, refetch } = useQuery({
-    queryKey: ["organizations"],
+    queryKey: ["organizations", userId],
     queryFn: organizationApi.getMyOrganizations,
+    enabled: Boolean(userId),
   });
 
   const onOrgPress = useCallback(

@@ -1,11 +1,10 @@
 import React, { PropsWithChildren } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "../queryClient";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppThemeProvider } from "../theme";
 import { AppSnackbarHost } from "../ui/feedback/AppSnackbarHost";
-
-const queryClient = new QueryClient();
 
 export const AppProviders = ({ children }: PropsWithChildren) => (
   <GestureHandlerRootView style={{ flex: 1 }}>

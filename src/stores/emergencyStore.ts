@@ -19,7 +19,28 @@ export const useEmergencyStore = create<EmergencyState>((set) => ({
   isSendingLocation: false,
   lastLocationSentAt: null,
   pendingCategory: null,
-  setActiveSession: (activeSession) => set({ activeSession }),
+  setActiveSession: (activeSession) =>
+    set((state) => {
+      if (!activeSession) {
+        return { activeSession: null };
+      }
+      const prev = state.activeSession;
+      if (
+        prev?.id === activeSession.id &&
+        prev.venue &&
+        (!activeSession.venue || activeSession.venue == null)
+      ) {
+        return {
+          activeSession: {
+            ...activeSession,
+            venue: prev.venue,
+            venueId: activeSession.venueId ?? prev.venueId,
+            emergencyType: activeSession.emergencyType ?? prev.emergencyType,
+          },
+        };
+      }
+      return { activeSession };
+    }),
   setSendingLocation: (isSendingLocation) => set({ isSendingLocation }),
   markLocationSent: () => set({ lastLocationSentAt: new Date().toISOString() }),
   setPendingCategory: (pendingCategory) => set({ pendingCategory }),

@@ -18,9 +18,29 @@ export interface Venue {
   id: string;
   organizationId: string;
   name: string;
-  address?: string;
-  latitude?: number;
-  longitude?: number;
+  address?: string | null;
+  apartment?: string | null;
+  floor?: string | null;
+  entrance?: string | null;
+  doorCode?: string | null;
+  addressNotes?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+/** Склеивает поля адреса точки для отображения (как на форме). */
+export function formatVenueAddress(v: Pick<Venue, "address" | "apartment" | "floor" | "entrance" | "doorCode" | "addressNotes" | "latitude" | "longitude">): string {
+  const bits: string[] = [];
+  if (v.address?.trim()) bits.push(v.address.trim());
+  if (v.apartment?.trim()) bits.push(`кв. ${v.apartment.trim()}`);
+  if (v.floor?.trim()) bits.push(`эт. ${v.floor.trim()}`);
+  if (v.entrance?.trim()) bits.push(`подъезд ${v.entrance.trim()}`);
+  if (v.doorCode?.trim()) bits.push(`домофон: ${v.doorCode.trim()}`);
+  if (v.addressNotes?.trim()) bits.push(v.addressNotes.trim());
+  if (bits.length === 0 && v.latitude != null && v.longitude != null) {
+    return `${v.latitude.toFixed(5)}, ${v.longitude.toFixed(5)}`;
+  }
+  return bits.join(" · ");
 }
 
 export const organizationApi = {
@@ -45,7 +65,20 @@ export const venueApi = {
     const { data } = await apiClient.get<Venue[]>(`/venue/organization/${organizationId}`);
     return data;
   },
-  async create(organizationId: string, payload: { name: string; address?: string; latitude?: number; longitude?: number }) {
+  async create(
+    organizationId: string,
+    payload: {
+      name: string;
+      address?: string;
+      apartment?: string;
+      floor?: string;
+      entrance?: string;
+      doorCode?: string;
+      addressNotes?: string;
+      latitude?: number;
+      longitude?: number;
+    },
+  ) {
     const { data } = await apiClient.post<Venue>(`/venue/organization/${organizationId}`, payload);
     return data;
   },

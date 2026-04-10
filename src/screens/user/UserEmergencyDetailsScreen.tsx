@@ -102,13 +102,13 @@ export const UserEmergencyDetailsScreen = ({ route }: Props) => {
           </Text>
         </AppCard>
 
-        <AppCard style={styles.mapCard}>
+        {/* <AppCard style={styles.mapCard}>
           <View style={styles.mapFakeTrack}>
             <View style={[styles.mapDot, { left: "10%", backgroundColor: "#25D366" }]} />
             <View style={[styles.mapDot, { left: "86%", backgroundColor: "#F84F4F" }]} />
             <View style={styles.mapTrack} />
           </View>
-        </AppCard>
+        </AppCard> */}
 
         <Text style={[styles.timelineTitle, { color: tokens.colors.onSurface }]}>
           {ru.emergencyDetails.timeline}

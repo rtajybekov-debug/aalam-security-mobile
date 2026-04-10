@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { UserStackParamList } from "../../navigation/types";
+import { useAuthStore } from "../../stores/authStore";
 import { organizationApi, OrganizationMember } from "../../api/modules/organization";
 import { SkeletonList } from "../../components/state/SkeletonList";
 import { ErrorState } from "../../components/state/ErrorState";
@@ -48,9 +49,11 @@ const TYPE_LABELS: Record<string, string> = {
 
 export const UserOrganizationScreen = ({ navigation }: Props) => {
   const { tokens } = useAppTheme();
+  const userId = useAuthStore((s) => s.user?.id);
   const { data: memberships, isLoading, isError, refetch } = useQuery({
-    queryKey: ["organizations"],
+    queryKey: ["organizations", userId],
     queryFn: organizationApi.getMyOrganizations,
+    enabled: Boolean(userId),
   });
 
   const openVenuesInCommon = useCallback(

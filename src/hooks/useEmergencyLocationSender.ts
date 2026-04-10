@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import * as Location from "expo-location";
 import * as Device from "expo-device";
 import { emergencyApi } from "../api/modules/emergency";
@@ -10,6 +10,18 @@ function looksLikeSimulatorCoords(lat: number, lon: number): boolean {
   return (lat > 37 && lat < 38 && lon > -123 && lon < -121) || (lat > 40 && lat < 42 && lon > -75 && lon < -73);
 }
 
+function getFiniteVenueCoords(lat: unknown, lng: unknown): { lat: number; lng: number } | null {
+  if (
+    typeof lat === "number" &&
+    typeof lng === "number" &&
+    Number.isFinite(lat) &&
+    Number.isFinite(lng)
+  ) {
+    return { lat, lng };
+  }
+  return null;
+}
+
 export const useEmergencyLocationSender = (intervalMs = 5000) => {
   const role = useAuthStore((state) => state.role);
   const activeSession = useEmergencyStore((state) => state.activeSession);
@@ -17,10 +29,55 @@ export const useEmergencyLocationSender = (intervalMs = 5000) => {
   const markLocationSent = useEmergencyStore((state) => state.markLocationSent);
   const activeSessionId = activeSession?.id;
   const activeSessionStatus = activeSession?.status;
+  const venueLat = activeSession?.venue?.latitude;
+  const venueLng = activeSession?.venue?.longitude;
+
+  /** Один раз отправили координаты филиала для этой сессии (защита от Strict Mode / повторных эффектов) */
+  const venueBranchSentForSessionRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!activeSessionId || activeSessionStatus === "CLOSED" || role !== "USER") {
       return;
+    }
+
+    const venueCoords = getFiniteVenueCoords(venueLat, venueLng);
+    if (venueCoords) {
+      if (venueBranchSentForSessionRef.current.has(activeSessionId)) {
+        return;
+      }
+      venueBranchSentForSessionRef.current.add(activeSessionId);
+
+      let cancelled = false;
+      const { lat, lng } = venueCoords;
+      const sendVenueOnce = async () => {
+        const latest = useEmergencyStore.getState().activeSession;
+        if (!latest?.id || latest.status === "CLOSED" || latest.id !== activeSessionId) {
+          return;
+        }
+        try {
+          setSendingLocation(true);
+          await emergencyApi.sendLocation(activeSessionId, {
+            latitude: lat,
+            longitude: lng,
+            accuracy: 10,
+          });
+          markLocationSent();
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "unknown error";
+          console.warn(`[location-sender:venue_branch] ${message}`);
+          venueBranchSentForSessionRef.current.delete(activeSessionId);
+        } finally {
+          if (!cancelled) {
+            setSendingLocation(false);
+          }
+        }
+      };
+
+      void sendVenueOnce();
+      return () => {
+        cancelled = true;
+        setSendingLocation(false);
+      };
     }
 
     let cancelled = false;
@@ -109,5 +166,7 @@ export const useEmergencyLocationSender = (intervalMs = 5000) => {
     markLocationSent,
     role,
     setSendingLocation,
+    venueLat,
+    venueLng,
   ]);
 };

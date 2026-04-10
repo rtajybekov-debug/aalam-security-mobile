@@ -12,7 +12,7 @@ import {
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft, Radio } from "lucide-react-native";
 import { UserStackParamList } from "../../navigation/types";
 import { useEmergencyStore } from "../../stores/emergencyStore";
 import { emergencyApi } from "../../api/modules/emergency";
@@ -33,8 +33,6 @@ const mono = Platform.select({ ios: "Menlo", default: "monospace" }) ?? "monospa
 
 const PEN = {
   bg: "#0A0A0A",
-  mapGradStart: "#0F172A",
-  mapGradEnd: "#1E293B",
   lime: "#C4F82A",
   lime2: "#84CC16",
   callText: "#0A0A0A",
@@ -52,7 +50,6 @@ const PEN = {
   noteStroke: "#374151",
   noteText: "#93C5FD",
   flow: "#52525B",
-  routeBlue: "#93C5FD",
   pillOn: "#22C55E",
   pillOnText: "#052E16",
   pillOffBg: "#27272A",
@@ -86,6 +83,7 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
   const originalBrightnessRef = useRef(1);
 
   const elapsed = useElapsedTicker(session?.createdAt ?? null);
+  const locationPointsCount = session?.locations?.length ?? 0;
 
   const handleStealthMode = async () => {
     if (!isBrightnessAvailable()) {
@@ -121,7 +119,7 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
   };
 
   const handleCallDispatch = () => {
-    void Linking.openURL("tel:112");
+    void Linking.openURL("tel:+996777777777");
   };
 
   const closeSession = useCallback(async () => {
@@ -207,18 +205,34 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
           {elapsed}
         </Text>
 
-        <LinearGradient
-          colors={[PEN.mapGradStart, PEN.mapGradEnd]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.mapCard}
-        >
-          <View style={styles.mapInner}>
-            <View style={[styles.youDot, { backgroundColor: PEN.lime }]} />
-            <Text style={[styles.youLabel, { fontFamily: mono, color: PEN.lime }]}>{ru.userActiveEmergency.you}</Text>
-            <View style={[styles.routeBar, { backgroundColor: PEN.routeBlue }]} />
+        <View style={[styles.liveContextCard, { borderColor: PEN.stealthBorder }]}>
+          <View style={styles.liveContextRow}>
+            <View style={[styles.liveContextIcon, { borderColor: `${PEN.lime}33` }]}>
+              <Radio size={22} color={PEN.lime} strokeWidth={2.2} />
+            </View>
+            <View style={styles.liveContextCopy}>
+              <Text style={[styles.liveContextTitle, { fontFamily: fonts.spaceGroteskBold }]}>
+                {ru.userActiveEmergency.liveContextTitle}
+              </Text>
+              <Text style={[styles.liveContextBody, { fontFamily: fonts.manropeMedium }]}>
+                {ru.userActiveEmergency.liveContextBody}
+              </Text>
+            </View>
           </View>
-        </LinearGradient>
+          {locationPointsCount > 0 ? (
+            <Text style={[styles.liveContextMeta, { fontFamily: mono }]}>
+              {ru.userActiveEmergency.locationPointsSent.replace("{n}", String(locationPointsCount))}
+            </Text>
+          ) : null}
+          <Text
+            style={[styles.liveContextSessionId, { fontFamily: mono }]}
+            numberOfLines={1}
+            selectable
+          >
+            {ru.userActiveEmergency.sessionRefPrefix}
+            {session.id.slice(0, 8)}…
+          </Text>
+        </View>
 
         <Pressable
           onPress={handleCallDispatch}
@@ -236,7 +250,7 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
           </LinearGradient>
         </Pressable>
 
-        <View style={[styles.stealthCard, { borderColor: PEN.stealthBorder }]}>
+        {/* <View style={[styles.stealthCard, { borderColor: PEN.stealthBorder }]}>
           <View style={styles.stealthTop}>
             <Text style={[styles.stealthTitle, { fontFamily: fonts.manropeSemiBold }]}>
               {ru.userActiveEmergency.stealth}
@@ -306,7 +320,7 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
               </Text>
             </Pressable>
           </View>
-        </View>
+        </View> */}
 
         <Pressable
           onPress={confirmClose}
@@ -381,36 +395,54 @@ const styles = StyleSheet.create({
     color: PEN.muted,
     marginTop: -4,
   },
-  mapCard: {
+  liveContextCard: {
     borderRadius: 16,
-    height: 220,
-    width: "100%",
-    overflow: "hidden",
+    borderWidth: 1,
+    backgroundColor: PEN.stealthSurface,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
     marginTop: 4,
+    gap: 10,
+    width: "100%",
   },
-  mapInner: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "flex-start",
-    paddingTop: 20,
+  liveContextRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
   },
-  youDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-  },
-  youLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    marginTop: 6,
-  },
-  routeBar: {
-    width: "56%",
-    maxWidth: 200,
-    height: 10,
+  liveContextIcon: {
+    width: 44,
+    height: 44,
     borderRadius: 12,
-    marginTop: 14,
-    opacity: 0.95,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(196, 248, 42, 0.07)",
+  },
+  liveContextCopy: {
+    flex: 1,
+    gap: 6,
+  },
+  liveContextTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    letterSpacing: -0.2,
+  },
+  liveContextBody: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: PEN.stealthSub,
+  },
+  liveContextMeta: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: PEN.lime,
+  },
+  liveContextSessionId: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: PEN.muted,
   },
   callSupport: {
     borderRadius: 14,
@@ -516,6 +548,7 @@ const styles = StyleSheet.create({
   noteText: {
     fontSize: 12,
     fontWeight: "500",
+    textAlign: "center",
     lineHeight: 17,
   },
   flowText: {
