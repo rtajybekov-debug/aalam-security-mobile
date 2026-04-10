@@ -15,7 +15,7 @@ import { spacing } from "../../theme";
 import { useAppTheme } from "../../theme";
 import {
   KYRGYZ_PHONE_HINT,
-  kyrgyzPhoneOptionalSchema,
+  kyrgyzPhoneRequiredSchema,
   sanitizeKyrgyzPhoneInput,
 } from "../../lib/kyrgyzPhone";
 import type { UpdateUserMePayload } from "../../types/user";
@@ -23,7 +23,7 @@ import { ru } from "../../locale/ru";
 
 const schema = z.object({
   displayName: z.string().trim().min(1, ru.validation.nameRequired),
-  phone: kyrgyzPhoneOptionalSchema,
+  phone: kyrgyzPhoneRequiredSchema,
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -59,7 +59,7 @@ export const UserEditDetailsScreen = ({ navigation }: Props) => {
     try {
       const payload: UpdateUserMePayload = {
         displayName: values.displayName.trim(),
-        phone: values.phone.trim() === "" ? "" : values.phone.trim(),
+        phone: sanitizeKyrgyzPhoneInput(values.phone),
       };
       const updated = await usersApi.patchMe(payload);
       setUser(updated);
@@ -81,8 +81,6 @@ export const UserEditDetailsScreen = ({ navigation }: Props) => {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.content}
         >
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.editDetails.screenTitle}</Text>
-
           <Controller
             control={control}
             name="displayName"
@@ -146,10 +144,5 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
     paddingBottom: spacing.xl,
     gap: 12,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    letterSpacing: -0.3,
   },
 });

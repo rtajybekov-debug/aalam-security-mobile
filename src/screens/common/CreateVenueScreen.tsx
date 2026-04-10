@@ -350,7 +350,6 @@ export const CreateVenueScreen = ({ route, navigation }: Props) => {
       >
         <View style={styles.header}>
           <Text style={[styles.orgLabel, { color: tokens.colors.onSurfaceMuted }]}>{organizationName}</Text>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.venueForm.title}</Text>
         </View>
 
         <View
@@ -645,7 +644,6 @@ const styles = StyleSheet.create({
   scroll: { flexGrow: 1, padding: 20, paddingBottom: 40 },
   header: { marginBottom: 20, gap: 4 },
   orgLabel: { fontSize: 12, fontWeight: "600" },
-  title: { fontSize: 24, fontWeight: "800" },
   card: {
     borderRadius: 16,
     borderWidth: 1,

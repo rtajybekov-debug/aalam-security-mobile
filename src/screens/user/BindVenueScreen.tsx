@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -35,15 +36,18 @@ const P = {
 } as const;
 
 export const BindVenueScreen = ({ navigation }: Props) => {
+  const queryClient = useQueryClient();
   const { tokens } = useAppTheme();
   const setVenue = useUserSessionStore((s) => s.setVenue);
+  const clearVenue = useUserSessionStore((s) => s.clearVenue);
   const currentVenueName = useUserSessionStore((s) => s.currentVenueName);
   const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [joinedName, setJoinedName] = useState<string | null>(null);
+  const [joinedOrgName, setJoinedOrgName] = useState<string | null>(null);
 
-  const showSuccess = joinedName !== null || !!currentVenueName;
+  const showSuccess = joinedName !== null || joinedOrgName !== null || !!currentVenueName;
   const successVenueName = joinedName ?? currentVenueName ?? "";
 
   const handleBind = async () => {
@@ -55,10 +59,22 @@ export const BindVenueScreen = ({ navigation }: Props) => {
     setError(undefined);
     setLoading(true);
     try {
-      const venue = await venueApi.bind(code);
-      await setVenue(venue.id, venue.name);
-      setJoinedName(venue.name);
-      toastBus.show({ message: `${ru.bindVenue.joinedPrefix} ${venue.name}`, severity: "success" });
+      const result = await venueApi.bind(code);
+      if (result.bindType === "organization") {
+        await clearVenue();
+        setJoinedOrgName(result.organization.name);
+        setJoinedName(null);
+        toastBus.show({
+          message: `${ru.bindVenue.joinedOrgPrefix} ${result.organization.name}`,
+          severity: "success",
+        });
+      } else {
+        await setVenue(result.id, result.name);
+        setJoinedName(result.name);
+        setJoinedOrgName(null);
+        toastBus.show({ message: `${ru.bindVenue.joinedPrefix} ${result.name}`, severity: "success" });
+      }
+      await queryClient.invalidateQueries({ queryKey: ["organizations"] });
     } catch {
       toastBus.show({ message: ru.bindVenue.invalidCode, severity: "error" });
       setError(ru.bindVenue.invalidCode);
@@ -129,7 +145,7 @@ export const BindVenueScreen = ({ navigation }: Props) => {
             </LinearGradient>
           </Pressable>
 
-          {showSuccess && !!successVenueName ? (
+          {showSuccess && (joinedOrgName || successVenueName) ? (
             <View
               style={[
                 styles.successCard,
@@ -138,7 +154,9 @@ export const BindVenueScreen = ({ navigation }: Props) => {
             >
               <Text style={[styles.successTag, { color: P.successLabel }]}>Success</Text>
               <Text style={[styles.successMsg, { color: P.successBody }]}>
-                You joined {successVenueName}.
+                {joinedOrgName
+                  ? `${ru.bindVenue.successOrgJoined} ${joinedOrgName}.`
+                  : `${ru.bindVenue.successVenueJoined} ${successVenueName}.`}
               </Text>
             </View>
           ) : null}

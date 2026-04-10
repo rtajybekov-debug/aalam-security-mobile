@@ -36,7 +36,6 @@ export type UserStackParamList = {
   /** Overview for users with an organization membership (same visual language as Home). */
   UserOrganization: undefined;
   UserBindVenue: undefined;
-  UserSetupPin: undefined;
   UserEditDetails: undefined;
   UserBillingPlans: undefined;
   UserBillingAddons: { planName: string; basePrice: number };

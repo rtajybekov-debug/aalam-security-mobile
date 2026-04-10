@@ -17,7 +17,7 @@ interface AuthState {
   isAuthenticated: boolean;
   bootstrap: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, phone: string) => Promise<void>;
   refresh: () => Promise<boolean>;
   logout: () => Promise<void>;
   setTokens: (tokens: AuthTokens | null) => void;
@@ -102,8 +102,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await useUserSessionStore.getState().hydrate();
     void queryClient.invalidateQueries({ queryKey: ["organizations"] });
   },
-  register: async (email: string, password: string) => {
-    const tokens = await authApi.register({ email, password });
+  register: async (email: string, password: string, phone: string) => {
+    const tokens = await authApi.register({ email, password, phone });
     const me = await usersApi.me(tokens.accessToken);
     await Promise.all([secureStorage.saveTokens(tokens), secureStorage.saveUser(me)]);
     set({

@@ -51,7 +51,6 @@ export const AdminCreateOperatorScreen = ({ navigation }: Props) => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.admin.createOperatorTitle}</Text>
             <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
               {ru.admin.createOperatorSub}
             </Text>
@@ -117,7 +116,6 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   scroll: { flexGrow: 1, padding: 20, gap: 16 },
   header: { gap: 4 },
-  title: { fontSize: 28, fontWeight: "800", letterSpacing: -0.5 },
   subtitle: { fontSize: 14, lineHeight: 20 },
   sectionLabel: {
     fontSize: 11,

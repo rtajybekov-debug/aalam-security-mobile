@@ -109,7 +109,6 @@ export const UserOrganizationScreen = ({ navigation }: Props) => {
           contentContainerStyle={styles.emptyScroll}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.pageTitle}>{ru.nav.organization}</Text>
           <View style={[styles.card, { borderColor: P.border, backgroundColor: P.card }]}>
             <Text style={styles.cardTitle}>{ru.userOrg.emptyTitle}</Text>
             <Text style={[styles.cardBody, { color: P.muted }]}>{ru.userOrg.emptyBody}</Text>
@@ -140,6 +139,50 @@ export const UserOrganizationScreen = ({ navigation }: Props) => {
   const memberCount = org._count?.members ?? null;
   const typeLabel = TYPE_LABELS[org.type] ?? org.type;
   const roleLabel = ROLE_LABELS[m.role] ?? m.role;
+  const isMemberParticipant = (m.role ?? "").toUpperCase() === "MEMBER";
+
+  const orgCard = (
+    <View style={[styles.card, { borderColor: P.border, backgroundColor: P.card }]}>
+      <View style={styles.cardTopRow}>
+        <Text style={[styles.metaLabel, { color: P.muted }]}>{ru.userOrg.name}</Text>
+        <View style={styles.roleBadge}>
+          <Text style={[styles.roleBadgeText, { fontFamily: monoFont }]}>{roleLabel}</Text>
+        </View>
+      </View>
+      <Text style={styles.orgName} numberOfLines={2}>
+        {org.name}
+      </Text>
+      <Text style={[styles.typeLine, { color: P.sessionMuted }]}>
+        {ru.userOrg.typePrefix}
+        {typeLabel}
+      </Text>
+      {memberCount != null ? (
+        <Text style={[styles.statLine, { color: P.muted }]}>
+          {ru.userOrg.statsVenues} {venues.length}
+          {" · "}
+          {ru.userOrg.statsMembers} {memberCount}
+        </Text>
+      ) : (
+        <Text style={[styles.statLine, { color: P.muted }]}>
+          {ru.userOrg.statsVenues} {venues.length}
+        </Text>
+      )}
+    </View>
+  );
+
+  if (isMemberParticipant) {
+    return (
+      <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]} edges={["bottom"]}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.contentMember}
+          showsVerticalScrollIndicator={false}
+        >
+          {orgCard}
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]} edges={["bottom"]}>
@@ -148,35 +191,9 @@ export const UserOrganizationScreen = ({ navigation }: Props) => {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.pageTitle}>{ru.nav.organization}</Text>
         <Text style={[styles.pageSubtitle, { color: P.muted }]}>{ru.userOrg.subtitle}</Text>
 
-        <View style={[styles.card, { borderColor: P.border, backgroundColor: P.card }]}>
-          <View style={styles.cardTopRow}>
-            <Text style={[styles.metaLabel, { color: P.muted }]}>{ru.userOrg.name}</Text>
-            <View style={styles.roleBadge}>
-              <Text style={[styles.roleBadgeText, { fontFamily: monoFont }]}>{roleLabel}</Text>
-            </View>
-          </View>
-          <Text style={styles.orgName} numberOfLines={2}>
-            {org.name}
-          </Text>
-          <Text style={[styles.typeLine, { color: P.sessionMuted }]}>
-            {ru.userOrg.typePrefix}
-            {typeLabel}
-          </Text>
-          {memberCount != null ? (
-            <Text style={[styles.statLine, { color: P.muted }]}>
-              {ru.userOrg.statsVenues} {venues.length}
-              {" · "}
-              {ru.userOrg.statsMembers} {memberCount}
-            </Text>
-          ) : (
-            <Text style={[styles.statLine, { color: P.muted }]}>
-              {ru.userOrg.statsVenues} {venues.length}
-            </Text>
-          )}
-        </View>
+        {orgCard}
 
         <Text style={[styles.sectionLabel, { color: P.muted }]}>{ru.userOrg.branches}</Text>
         {venues.length === 0 ? (
@@ -250,22 +267,22 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     gap: 12,
   },
+  contentMember: {
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    paddingBottom: 28,
+    gap: 16,
+  },
   emptyScroll: {
     paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 28,
     gap: 12,
   },
-  pageTitle: {
-    color: "#FFFFFF",
-    fontSize: 24,
-    fontWeight: "700",
-    marginTop: 4,
-  },
   pageSubtitle: {
     fontSize: 13,
     fontWeight: "500",
-    marginTop: -6,
+    marginTop: 0,
     marginBottom: 4,
   },
   card: {

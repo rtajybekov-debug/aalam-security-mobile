@@ -99,31 +99,64 @@ export const UserHomeScreen = ({ navigation }: Props) => {
     const orgType = (m.organization.type ?? "").toUpperCase();
     return role === "OWNER" && orgType === "BUSINESS";
   });
-  const ownerVenues = React.useMemo<Venue[]>(
-    () => ownerMembership?.organization.venues ?? [],
-    [ownerMembership?.organization.venues],
+  const orgWideMembership = memberships.find((m) => {
+    const role = (m.role ?? "").toUpperCase();
+    const orgType = (m.organization.type ?? "").toUpperCase();
+    const wide =
+      orgType === "BUSINESS" && (role === "MEMBER" || role === "MANAGER") && !m.venueId;
+    return Boolean(wide);
+  });
+  const isOrgWideEmployee = Boolean(orgWideMembership);
+  const branchPickerMembership = ownerMembership ?? orgWideMembership;
+  const branchVenues = React.useMemo<Venue[]>(
+    () => branchPickerMembership?.organization.venues ?? [],
+    [branchPickerMembership?.organization.venues],
   );
+  const serverIndividual = Boolean(profileUser?.individualSubscriptionActive);
+  const showBranchPicker = isBusinessOwner || isOrgWideEmployee;
+  const showGpsModeToggle =
+    isBusinessOwner ||
+    (isOrgWideEmployee && (serverIndividual || hasIndividualSubscription));
 
   const [sosMode, setSosMode] = React.useState<"gps" | "venue">("gps");
   const [selectedOwnerVenueId, setSelectedOwnerVenueId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    if (!isBusinessOwner || ownerVenues.length === 0) return;
+    if (!showGpsModeToggle) {
+      setSosMode("venue");
+    }
+  }, [showGpsModeToggle]);
+
+  React.useEffect(() => {
+    if (!showBranchPicker || branchVenues.length === 0) return;
     setSelectedOwnerVenueId((prev) => {
-      if (prev && ownerVenues.some((v) => v.id === prev)) return prev;
-      return ownerVenues[0]!.id;
+      if (prev && branchVenues.some((v) => v.id === prev)) return prev;
+      return branchVenues[0]!.id;
     });
-  }, [isBusinessOwner, ownerVenues]);
+  }, [showBranchPicker, branchVenues]);
 
   const assignedVenue = memberships
     .flatMap((member) => member.organization.venues ?? [])
     .find((venue) => venue.id === currentVenueId);
-  const venueAddressLine = assignedVenue ? formatVenueAddress(assignedVenue) : "";
+  const selectedBranchVenue =
+    isOrgWideEmployee && selectedOwnerVenueId
+      ? branchVenues.find((v) => v.id === selectedOwnerVenueId)
+      : undefined;
+  const venueForAddressLine = assignedVenue ?? selectedBranchVenue;
+  const venueAddressLine = venueForAddressLine ? formatVenueAddress(venueForAddressLine) : "";
   const hasAssignedVenue = Boolean(currentVenueId);
-  const serverIndividual = Boolean(profileUser?.individualSubscriptionActive);
   const canUseApp =
-    serverIndividual || hasIndividualSubscription || hasAssignedVenue || isBusinessOwner;
+    serverIndividual ||
+    hasIndividualSubscription ||
+    hasAssignedVenue ||
+    isBusinessOwner ||
+    (isOrgWideEmployee && branchVenues.length > 0);
   const inactiveReason = !hasOrganization && !hasIndividualSubscription ? "no_access" : "needs_assignment";
+  /** Один аккаунт PERSONAL после регистрации — без лишних предупреждений «нужна точка» и без блока «Моя организация». */
+  const isNewUserPersonalHome =
+    !canUseApp &&
+    memberships.length === 1 &&
+    (memberships[0].organization.type ?? "").toUpperCase() === "PERSONAL";
 
   const onStartSos = async () => {
     if (activeSession) {
@@ -141,8 +174,9 @@ export const UserHomeScreen = ({ navigation }: Props) => {
     try {
       let startOpts: { venueId?: string } | undefined;
 
-      if (isBusinessOwner) {
-        if (sosMode === "venue") {
+      if (showBranchPicker) {
+        const effectiveMode = showGpsModeToggle ? sosMode : "venue";
+        if (effectiveMode === "venue") {
           if (!selectedOwnerVenueId) {
             setButtonState("idle");
             toastBus.show({
@@ -219,30 +253,34 @@ export const UserHomeScreen = ({ navigation }: Props) => {
           </Pressable>
         ) : !canUseApp ? (
           <>
-            <View style={[styles.inactiveCard, { borderColor: P.border, backgroundColor: P.card }]}>
-              <Text style={styles.inactiveTitle}>
-                {inactiveReason === "no_access" ? ru.userHome.inactiveAccount : ru.userHome.inactiveBranch}
-              </Text>
-              <Text style={[styles.inactiveMessage, { color: P.muted }]}>
-                {inactiveReason === "no_access"
-                  ? ru.userHome.msgNoAccess
-                  : ru.userHome.msgNeedBranch}
-              </Text>
-            </View>
-            {hasOrganization ? (
-              <Pressable
-                onPress={() => navigation.navigate("UserOrganization")}
-                style={[styles.venueDetailsRow, { borderColor: P.border, backgroundColor: P.card }]}
-                accessibilityRole="button"
-              >
-                <View style={styles.venueTextWrap}>
-                  <Text style={styles.venueTitle}>{ru.userHome.myOrg}</Text>
-                  <Text style={[styles.venueSub, { color: P.sessionMuted }]} numberOfLines={1}>
-                    {memberships[0]?.organization.name ?? ru.userHome.myOrgSubInactive}
+            {!isNewUserPersonalHome ? (
+              <>
+                <View style={[styles.inactiveCard, { borderColor: P.border, backgroundColor: P.card }]}>
+                  <Text style={styles.inactiveTitle}>
+                    {inactiveReason === "no_access" ? ru.userHome.inactiveAccount : ru.userHome.inactiveBranch}
+                  </Text>
+                  <Text style={[styles.inactiveMessage, { color: P.muted }]}>
+                    {inactiveReason === "no_access"
+                      ? ru.userHome.msgNoAccess
+                      : ru.userHome.msgNeedBranch}
                   </Text>
                 </View>
-                <Text style={[styles.venueArrow, { color: "#C4F82A" }]}>→</Text>
-              </Pressable>
+                {hasOrganization ? (
+                  <Pressable
+                    onPress={() => navigation.navigate("UserOrganization")}
+                    style={[styles.venueDetailsRow, { borderColor: P.border, backgroundColor: P.card }]}
+                    accessibilityRole="button"
+                  >
+                    <View style={styles.venueTextWrap}>
+                      <Text style={styles.venueTitle}>{ru.userHome.myOrg}</Text>
+                      <Text style={[styles.venueSub, { color: P.sessionMuted }]} numberOfLines={1}>
+                        {memberships[0]?.organization.name ?? ru.userHome.myOrgSubInactive}
+                      </Text>
+                    </View>
+                    <Text style={[styles.venueArrow, { color: "#C4F82A" }]}>→</Text>
+                  </Pressable>
+                ) : null}
+              </>
             ) : null}
             <View style={styles.ctaStack}>
               <Pressable
@@ -286,9 +324,13 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                   : `${ru.userHome.orgPrefix} ${memberships[0]?.organization.name ?? "—"}`}
               </Text>
               <Text style={[styles.assignedLine, { color: P.muted }]}>
-                {hasIndividualSubscription && !hasAssignedVenue
+                {hasIndividualSubscription && !hasAssignedVenue && !isOrgWideEmployee
                   ? `${ru.userHome.venuePrefix} ${ru.userHome.personalMode}`
-                  : `${ru.userHome.venuePrefix} ${currentVenueName ?? ru.userHome.notAssigned}`}
+                  : `${ru.userHome.venuePrefix} ${
+                      isOrgWideEmployee && !currentVenueName
+                        ? ru.userHome.orgWideVenueLine
+                        : currentVenueName ?? ru.userHome.notAssigned
+                    }`}
               </Text>
               {venueAddressLine ? (
                 <Text style={[styles.locationLine, { color: P.sessionMuted }]}>
@@ -315,8 +357,9 @@ export const UserHomeScreen = ({ navigation }: Props) => {
 
             <View style={styles.sosBlock}>
               <SosEmergencyButton state={buttonState} onTrigger={onStartSos} dashboardStyle />
-              {isBusinessOwner ? (
+              {showBranchPicker ? (
                 <View style={styles.ownerSosSection}>
+                  {showGpsModeToggle ? (
                   <View style={styles.ownerModeRow}>
                     <Pressable
                       onPress={() => setSosMode("gps")}
@@ -359,8 +402,9 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                       </Text>
                     </Pressable>
                   </View>
-                  {sosMode === "venue" ? (
-                    ownerVenues.length === 0 ? (
+                  ) : null}
+                  {(!showGpsModeToggle || sosMode === "venue") ? (
+                    branchVenues.length === 0 ? (
                       <Text style={[styles.ownerVenuesEmpty, { color: P.sessionMuted }]}>
                         {ru.userHome.ownerVenuesEmpty}
                       </Text>
@@ -369,7 +413,7 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                         <Text style={[styles.ownerVenuesHint, { color: P.muted }]}>
                           {ru.userHome.ownerVenuesHint}
                         </Text>
-                        {ownerVenues.map((v) => {
+                        {branchVenues.map((v) => {
                           const selected = v.id === selectedOwnerVenueId;
                           const line = formatVenueAddress(v);
                           return (

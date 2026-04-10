@@ -23,7 +23,6 @@ export const OrganizationRequestSubmittedScreen = ({ navigation }: Props) => {
         <View style={styles.successIconWrap}>
           <Text style={styles.successIcon}>✓</Text>
         </View>
-        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.requestSubmitted.title}</Text>
         <Text style={[styles.message, { color: tokens.colors.onSurfaceMuted }]}>{ru.requestSubmitted.body}</Text>
         <ActionButton label={ru.requestSubmitted.backHome} onPress={onBackHome} />
       </View>
@@ -55,11 +54,6 @@ const styles = StyleSheet.create({
     color: "#86EFAC",
     fontSize: 30,
     fontWeight: "700",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    letterSpacing: -0.3,
   },
   message: {
     fontSize: 14,

@@ -4,6 +4,8 @@ export interface OrganizationMember {
   id: string;
   organizationId: string;
   role: string;
+  /** null = org-wide member (organization invite); set = bound to a single venue */
+  venueId?: string | null;
   organization: {
     id: string;
     name: string;
@@ -54,11 +56,17 @@ export const organizationApi = {
   },
 };
 
-export interface BindVenueResponse {
-  id: string;
-  name: string;
-  organization: { id: string; name: string };
-}
+export type BindVenueResponse =
+  | {
+      bindType: "venue";
+      id: string;
+      name: string;
+      organization: { id: string; name: string };
+    }
+  | {
+      bindType: "organization";
+      organization: { id: string; name: string };
+    };
 
 export const venueApi = {
   async list(organizationId: string) {

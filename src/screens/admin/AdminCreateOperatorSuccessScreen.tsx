@@ -17,7 +17,6 @@ export const AdminCreateOperatorSuccessScreen = ({ navigation }: Props) => {
         <View style={[styles.iconWrap, { backgroundColor: "#DCFCE7" }]}>
           <CircleCheck size={40} color="#166534" strokeWidth={2} />
         </View>
-        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.admin.successTitle}</Text>
         <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>{ru.admin.successSub}</Text>
         <ActionButton
           label={ru.operatorScreens.adminBack}
@@ -45,6 +44,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
-  title: { fontSize: 24, fontWeight: "800", textAlign: "center", letterSpacing: -0.3 },
   subtitle: { fontSize: 14, textAlign: "center", lineHeight: 22, maxWidth: 300 },
 });

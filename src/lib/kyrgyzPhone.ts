@@ -4,7 +4,9 @@ import { z } from "zod";
 export const KYRGYZ_PHONE_REGEX = /^\+996\d{9}$/;
 
 export const KYRGYZ_PHONE_HINT =
-  "Use +996 and 9 digits (example: +996555123456)";
+  "Формат: +996 и 9 цифр (например +996555123456)";
+
+export const KYRGYZ_PHONE_REQUIRED_MSG = "Укажите телефон";
 
 /**
  * Normalizes free-form input to `+996` + up to 9 national digits.
@@ -35,9 +37,9 @@ export const kyrgyzPhoneOptionalSchema = z.string().superRefine((val, ctx) => {
   }
 });
 
-/** Required contact phone for org application etc. */
+/** Required: +996 + 9 digits (profile, registration, org application, etc.). */
 export const kyrgyzPhoneRequiredSchema = z
   .string()
   .trim()
-  .min(1, "Phone is required")
+  .min(1, KYRGYZ_PHONE_REQUIRED_MSG)
   .regex(KYRGYZ_PHONE_REGEX, KYRGYZ_PHONE_HINT);

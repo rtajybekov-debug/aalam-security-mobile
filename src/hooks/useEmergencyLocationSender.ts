@@ -24,6 +24,7 @@ function getFiniteVenueCoords(lat: unknown, lng: unknown): { lat: number; lng: n
 
 export const useEmergencyLocationSender = (intervalMs = 5000) => {
   const role = useAuthStore((state) => state.role);
+  const individualSubscriptionActive = useAuthStore((state) => state.user?.individualSubscriptionActive);
   const activeSession = useEmergencyStore((state) => state.activeSession);
   const setSendingLocation = useEmergencyStore((state) => state.setSendingLocation);
   const markLocationSent = useEmergencyStore((state) => state.markLocationSent);
@@ -78,6 +79,11 @@ export const useEmergencyLocationSender = (intervalMs = 5000) => {
         cancelled = true;
         setSendingLocation(false);
       };
+    }
+
+    /** SOS по объекту без личной подписки — не используем GPS, только координаты филиала (см. ветку venue выше). */
+    if (activeSession?.emergencyType === "VENUE" && !individualSubscriptionActive) {
+      return;
     }
 
     let cancelled = false;
@@ -168,5 +174,6 @@ export const useEmergencyLocationSender = (intervalMs = 5000) => {
     setSendingLocation,
     venueLat,
     venueLng,
+    individualSubscriptionActive,
   ]);
 };

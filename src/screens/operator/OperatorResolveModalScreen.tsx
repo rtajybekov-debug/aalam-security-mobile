@@ -48,7 +48,6 @@ export const OperatorResolveModalScreen = ({ route, navigation }: Props) => {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.content}>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.operatorScreens.resolveTitle}</Text>
           <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>
             {ru.operatorScreens.resolveSub}
           </Text>
@@ -98,7 +97,6 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   flex: { flex: 1 },
   content: { flex: 1, padding: 20, gap: 16 },
-  title: { fontSize: 24, fontWeight: "800", letterSpacing: -0.3 },
   subtitle: { fontSize: 14, lineHeight: 20 },
   textarea: { minHeight: 140 },
   actions: { flexDirection: "row", gap: 12, marginTop: 8 },

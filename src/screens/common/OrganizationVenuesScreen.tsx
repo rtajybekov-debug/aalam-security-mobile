@@ -80,9 +80,6 @@ export const OrganizationVenuesScreen = ({ route, navigation }: Props) => {
     <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]} numberOfLines={1}>
-            {organizationName}
-          </Text>
           <Text style={[styles.subtitle, { color: tokens.colors.onSurfaceMuted }]}>{ru.orgVenues.subtitle}</Text>
         </View>
 
@@ -131,7 +128,6 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   content: { flex: 1, padding: 20 },
   header: { marginBottom: 20, gap: 4 },
-  title: { fontSize: 24, fontWeight: "800" },
   subtitle: { fontSize: 14, lineHeight: 20 },
   list: { gap: 12, paddingBottom: 24 },
   card: {

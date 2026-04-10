@@ -20,7 +20,7 @@ export const AdminStack = () => (
     <Stack.Screen
       name="AdminCreateOperatorSuccess"
       component={AdminCreateOperatorSuccessScreen}
-      options={{ title: ru.nav.success }}
+      options={{ title: ru.admin.successTitle }}
     />
   </Stack.Navigator>
 );

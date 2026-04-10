@@ -82,10 +82,6 @@ export const UserEmergencyDetailsScreen = ({ route }: Props) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.pageTitle, { color: tokens.colors.onSurface }]}>
-          {ru.emergencyDetails.pageTitle}
-        </Text>
-
         <AppCard style={styles.summaryCard}>
           <Text style={[styles.sectionTitle, { color: tokens.colors.onSurface }]}>
             {ru.emergencyDetails.summary}
@@ -146,7 +142,6 @@ export const UserEmergencyDetailsScreen = ({ route }: Props) => {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   scrollContent: { padding: spacing.lg, gap: 12, paddingBottom: spacing.xl * 2 },
-  pageTitle: { fontSize: 18, fontWeight: "700", letterSpacing: -0.2 },
   sectionTitle: { fontSize: 16, fontWeight: "700", letterSpacing: -0.2, marginBottom: 2 },
   summaryCard: { gap: 4 },
   statusText: { marginTop: 6, fontSize: 12, fontWeight: "700", color: "#22C55E" },

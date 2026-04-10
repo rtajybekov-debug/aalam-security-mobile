@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
+import { Paperclip } from "lucide-react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { z } from "zod";
 import { CommonStackParamList } from "../../navigation/types";
@@ -24,10 +25,17 @@ import {
   sanitizeKyrgyzPhoneInput,
 } from "../../lib/kyrgyzPhone";
 import { ru } from "../../locale/ru";
+import { MapAddressPicker } from "../../components/maps/MapAddressPicker";
 
 type Props = NativeStackScreenProps<CommonStackParamList, "RequestNewOrganization">;
 type OrganizationType = "Corporate" | "Non-profit" | "Government";
-type BranchDraft = { id: string; name: string; address: string };
+type BranchDraft = {
+  id: string;
+  name: string;
+  address: string;
+  latitude?: number;
+  longitude?: number;
+};
 
 const ORGANIZATION_TYPES: OrganizationType[] = ["Corporate", "Non-profit", "Government"];
 
@@ -45,6 +53,8 @@ const organizationRequestSchema = z.object({
       z.object({
         name: z.string().trim().min(1, ru.createOrgForm.branchNameRequired),
         address: z.string().trim().min(1, ru.createOrgForm.branchAddrRequired),
+        latitude: z.number({ required_error: ru.createOrgForm.branchMapRequired }),
+        longitude: z.number({ required_error: ru.createOrgForm.branchMapRequired }),
       }),
     )
     .min(1, ru.createOrgForm.minBranches),
@@ -82,6 +92,24 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
     );
   };
 
+  const updateBranchLocation = (
+    id: string,
+    next: { address: string; latitude: number; longitude: number },
+  ) => {
+    setBranches((prev) =>
+      prev.map((branch) =>
+        branch.id === id
+          ? {
+              ...branch,
+              address: next.address,
+              latitude: next.latitude,
+              longitude: next.longitude,
+            }
+          : branch,
+      ),
+    );
+  };
+
   const addBranch = () => {
     setBranches((prev) => [
       ...prev,
@@ -94,7 +122,11 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
   };
 
   const hasValidBranches = branches.every(
-    (branch) => branch.name.trim().length > 0 && branch.address.trim().length > 0,
+    (branch) =>
+      branch.name.trim().length > 0 &&
+      branch.address.trim().length > 0 &&
+      branch.latitude != null &&
+      branch.longitude != null,
   );
 
   const requiredDone =
@@ -145,7 +177,12 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
     const parsed = organizationRequestSchema.safeParse({
       organizationName,
       organizationType,
-      branches: branches.map((b) => ({ name: b.name, address: b.address })),
+      branches: branches.map((b) => ({
+        name: b.name,
+        address: b.address,
+        latitude: b.latitude,
+        longitude: b.longitude,
+      })),
       contactEmail,
       contactPhone: sanitizeKyrgyzPhoneInput(contactPhone),
       description: description.trim() || undefined,
@@ -199,9 +236,9 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.title, { color: tokens.colors.onSurface }]}>{ru.createOrgForm.title}</Text>
         <Text style={[styles.intro, { color: tokens.colors.onSurfaceMuted }]}>{ru.createOrgForm.intro}</Text>
 
+        <Text style={[styles.sectionLabel, { color: tokens.colors.onSurface }]}>{ru.createOrgForm.orgSection}</Text>
         <AppInput
           label={ru.createOrgForm.orgNameLabel}
           value={organizationName}
@@ -245,7 +282,7 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
           </View>
         ) : null}
 
-        <Text style={[styles.fieldLabel, { color: tokens.colors.onSurfaceMuted }]}>
+        <Text style={[styles.sectionLabel, { color: tokens.colors.onSurface }]}>
           {ru.createOrgForm.branchesLabel}
         </Text>
         <View style={styles.branchesWrap}>
@@ -274,17 +311,29 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
                 value={branch.name}
                 onChangeText={(v) => updateBranch(branch.id, "name", v)}
               />
-              <AppInput
-                label={ru.createOrgForm.branchAddrLabel}
-                value={branch.address}
-                onChangeText={(v) => updateBranch(branch.id, "address", v)}
-                autoComplete="street-address"
+              <Text style={[styles.fieldLabel, { color: tokens.colors.onSurfaceMuted }]}>
+                {ru.createOrgForm.branchAddrLabel}
+              </Text>
+              <MapAddressPicker
+                address={branch.address}
+                latitude={branch.latitude}
+                longitude={branch.longitude}
+                onChange={(next) => updateBranchLocation(branch.id, next)}
               />
             </View>
           ))}
         </View>
-        <ActionButton variant="secondary" size="small" label={ru.createOrgForm.addBranch} onPress={addBranch} />
+        <ActionButton
+          variant="secondary"
+          size="small"
+          label={ru.createOrgForm.addBranch}
+          onPress={addBranch}
+          style={styles.addBranchBtn}
+        />
 
+        <Text style={[styles.sectionLabel, { color: tokens.colors.onSurface }]}>
+          {ru.createOrgForm.contactSection}
+        </Text>
         <AppInput
           label={ru.createOrgForm.contactEmailLabel}
           value={contactEmail}
@@ -312,19 +361,31 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
             value={description}
             onChangeText={setDescription}
           />
-          <View style={styles.uploadRow}>
-            <Pressable
-              style={[styles.uploadButton, { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border }]}
-              onPress={() => void onPickDocuments()}
-              accessibilityRole="button"
-              accessibilityLabel={ru.createOrgForm.uploadA11y}
-            >
-              <Text style={[styles.uploadButtonText, { color: "#93C5FD" }]}>{ru.createOrgForm.addAttachment}</Text>
-            </Pressable>
-            <Text style={[styles.uploadHint, { color: tokens.colors.onSurfaceMuted }]}>
+
+          <Text style={[styles.sectionLabelMuted, { color: tokens.colors.onSurfaceMuted }]}>
+            {ru.createOrgForm.attachmentsSection}
+          </Text>
+          <Pressable
+            style={[
+              styles.uploadZone,
+              { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border },
+            ]}
+            onPress={() => void onPickDocuments()}
+            accessibilityRole="button"
+            accessibilityLabel={ru.createOrgForm.uploadA11y}
+          >
+            <Paperclip size={26} color={tokens.colors.primary} strokeWidth={2} />
+            <Text style={[styles.uploadZoneTitle, { color: tokens.colors.onSurface }]}>
+              {ru.createOrgForm.addAttachment}
+            </Text>
+            <Text style={[styles.uploadZoneSub, { color: tokens.colors.onSurfaceMuted }]}>
+              {ru.createOrgForm.addAttachmentSub}
+            </Text>
+            <Text style={[styles.uploadZoneFormats, { color: tokens.colors.onSurfaceMuted }]}>
               {ru.createOrgForm.filesHint}
             </Text>
-          </View>
+          </Pressable>
+
           {attachments.length > 0 ? (
             <View style={styles.attachmentList}>
               {attachments.map((asset) => (
@@ -335,7 +396,7 @@ export const RequestNewOrganizationScreen = ({ navigation }: Props) => {
                     { backgroundColor: tokens.colors.surface, borderColor: tokens.colors.border },
                   ]}
                 >
-                  <Text style={[styles.attachmentName, { color: tokens.colors.onSurface }]} numberOfLines={1}>
+                  <Text style={[styles.attachmentName, { color: tokens.colors.onSurface }]} numberOfLines={2}>
                     {asset.name ?? "document"}
                   </Text>
                   <Pressable onPress={() => removeAttachment(asset.uri)} hitSlop={8}>
@@ -387,111 +448,144 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xl,
-    gap: 7,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxl,
+    gap: spacing.sectionGap,
   },
-  title: { fontSize: 24, fontWeight: "700", letterSpacing: -0.3 },
-  intro: { fontSize: 12, fontWeight: "500", lineHeight: 18, marginBottom: 2 },
-  fieldLabel: { fontSize: 11, fontWeight: "600", marginBottom: 2 },
+  intro: {
+    fontSize: 13,
+    fontWeight: "500",
+    lineHeight: 20,
+    marginBottom: spacing.xs,
+  },
+  sectionLabel: {
+    fontSize: 15,
+    fontWeight: "700",
+    letterSpacing: -0.3,
+    marginBottom: spacing.xs,
+  },
+  sectionLabelMuted: {
+    fontSize: 13,
+    fontWeight: "600",
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  fieldLabel: { fontSize: 12, fontWeight: "600", marginBottom: spacing.xs, marginTop: spacing.xs },
   selectRow: {
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 2,
   },
-  selectValue: { fontSize: 12, fontWeight: "500" },
-  chevron: { fontSize: 12, fontWeight: "600" },
+  selectValue: { fontSize: 14, fontWeight: "500" },
+  chevron: { fontSize: 14, fontWeight: "600" },
   optionsWrap: {
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     overflow: "hidden",
-    marginTop: -1,
+    marginTop: spacing.xs,
   },
   optionRow: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
-  optionText: { fontSize: 12, fontWeight: "500" },
-  branchesWrap: { gap: 8, marginTop: 2 },
+  optionText: { fontSize: 14, fontWeight: "500" },
+  branchesWrap: { gap: spacing.cardGap },
   branchCard: {
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 10,
-    gap: 8,
+    borderRadius: 14,
+    padding: spacing.md,
+    gap: spacing.sm,
   },
   branchCardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  branchTitle: { fontSize: 12, fontWeight: "700" },
-  removeBranchText: { fontSize: 12, fontWeight: "600" },
-  descriptionBlock: { marginTop: 2, gap: 2 },
-  uploadRow: {
-    gap: 8,
-    marginTop: 2,
-  },
-  uploadButton: {
-    alignSelf: "flex-start",
+  branchTitle: { fontSize: 13, fontWeight: "700" },
+  removeBranchText: { fontSize: 13, fontWeight: "600" },
+  addBranchBtn: { alignSelf: "flex-start", marginTop: -spacing.xs },
+  descriptionBlock: { gap: spacing.sm },
+  uploadZone: {
+    width: "100%",
+    minHeight: 112,
+    borderRadius: 14,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.xs,
   },
-  uploadButtonText: {
-    fontSize: 11,
-    fontWeight: "600",
+  uploadZoneTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    textAlign: "center",
   },
-  uploadHint: {
-    fontSize: 10,
+  uploadZoneSub: {
+    fontSize: 13,
     fontWeight: "500",
+    textAlign: "center",
+    lineHeight: 18,
+  },
+  uploadZoneFormats: {
+    fontSize: 12,
+    fontWeight: "500",
+    textAlign: "center",
+    marginTop: spacing.xs,
+    opacity: 0.9,
   },
   attachmentList: {
-    gap: 6,
-    marginTop: 2,
+    gap: spacing.sm,
+    marginTop: spacing.xs,
   },
   attachmentItem: {
     borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 10,
+    gap: 12,
   },
   attachmentName: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "500",
   },
   removeAttachmentText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "600",
   },
   checkboxRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 8,
-    marginTop: 2,
+    gap: 10,
+    marginTop: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   checkbox: {
-    width: 16,
-    height: 16,
+    width: 18,
+    height: 18,
     borderRadius: 4,
     justifyContent: "center",
     alignItems: "center",
   },
-  checkboxTick: { fontSize: 10, color: "#0A0A0A", fontWeight: "700" },
-  checkboxText: { flex: 1, fontSize: 11, fontWeight: "500", lineHeight: 16 },
-  submit: { marginTop: 4 },
-  caption: { fontSize: 10, textAlign: "center", marginTop: 2 },
-  legalRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 2 },
-  legalLink: { fontSize: 11, fontWeight: "500" },
-  legalDot: { fontSize: 11, fontWeight: "500" },
+  checkboxTick: { fontSize: 11, color: "#0A0A0A", fontWeight: "700" },
+  checkboxText: { flex: 1, fontSize: 13, fontWeight: "500", lineHeight: 19 },
+  submit: { marginTop: spacing.sm },
+  caption: { fontSize: 11, textAlign: "center", marginTop: spacing.xs, lineHeight: 16 },
+  legalRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    marginTop: spacing.xs,
+  },
+  legalLink: { fontSize: 12, fontWeight: "500" },
+  legalDot: { fontSize: 12, fontWeight: "500" },
 });

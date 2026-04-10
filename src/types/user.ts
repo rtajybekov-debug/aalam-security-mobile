@@ -14,7 +14,7 @@ export interface UserProfile {
 
 export interface UpdateUserMePayload {
   displayName?: string;
-  phone?: string;
+  phone: string;
 }
 
 export interface UserListItem extends UserProfile {}

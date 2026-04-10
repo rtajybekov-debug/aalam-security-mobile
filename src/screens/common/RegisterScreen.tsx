@@ -20,11 +20,17 @@ import { toastBus } from "../../ui/feedback/toastBus";
 import { useAppTheme } from "../../theme";
 import { ru } from "../../locale/ru";
 import { Check } from "lucide-react-native";
+import {
+  KYRGYZ_PHONE_HINT,
+  kyrgyzPhoneRequiredSchema,
+  sanitizeKyrgyzPhoneInput,
+} from "../../lib/kyrgyzPhone";
 
 const schema = z
   .object({
     name: z.string().min(1, ru.validation.nameRequired),
     email: z.string().email(ru.validation.emailInvalid),
+    phone: kyrgyzPhoneRequiredSchema,
     password: z.string().min(6, ru.validation.passwordMin),
     confirmPassword: z.string().min(1, ru.validation.confirmPassword),
   })
@@ -47,7 +53,7 @@ export const RegisterScreen = ({ navigation }: Props) => {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
+    defaultValues: { name: "", email: "", phone: "", password: "", confirmPassword: "" },
   });
 
   const onSubmit = async (values: FormValues) => {
@@ -56,7 +62,7 @@ export const RegisterScreen = ({ navigation }: Props) => {
       return;
     }
     try {
-      await register(values.email, values.password);
+      await register(values.email, values.password, sanitizeKyrgyzPhoneInput(values.phone));
       toastBus.show({ message: ru.auth.accountCreated, severity: "success" });
     } catch {
       toastBus.show({ message: ru.auth.registerFailed, severity: "error" });
@@ -110,6 +116,23 @@ export const RegisterScreen = ({ navigation }: Props) => {
                 onChangeText={onChange}
                 error={errors.email?.message}
                 autoComplete="email"
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="phone"
+            render={({ field: { onChange, value } }) => (
+              <AppInput
+                label={ru.auth.phone}
+                keyboardType="phone-pad"
+                returnKeyType="next"
+                value={value}
+                onChangeText={(v) => onChange(sanitizeKyrgyzPhoneInput(v))}
+                error={errors.phone?.message}
+                hint={KYRGYZ_PHONE_HINT}
+                autoComplete="tel"
               />
             )}
           />

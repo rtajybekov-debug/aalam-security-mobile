@@ -68,11 +68,7 @@ export const OperatorSessionDetailsScreen = ({ route, navigation }: Props) => {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: tokens.colors.background }]}>
       <View style={styles.content}>
-        {/* Title row */}
-        <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: tokens.colors.onSurface }]}>
-            {ru.operatorScreens.sessionDetailsTitle}
-          </Text>
+        <View style={styles.statusRow}>
           <StatusChip status={session.status} />
         </View>
 
@@ -136,12 +132,7 @@ export const OperatorSessionDetailsScreen = ({ route, navigation }: Props) => {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   content: { flex: 1, padding: 20, gap: 16 },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  title: { fontSize: 24, fontWeight: "800", letterSpacing: -0.3 },
+  statusRow: { flexDirection: "row", justifyContent: "flex-end" },
   sectionLabel: {
     fontSize: 11,
     fontWeight: "600",

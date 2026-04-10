@@ -35,7 +35,6 @@ export const UserProfileScreen = () => {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const currentVenueName = useUserSessionStore((s) => s.currentVenueName);
-  const userPin = useUserSessionStore((s) => s.userPin);
   const roleLabel = user?.role ? (ROLE_LABELS[user.role] ?? user.role) : "—";
 
   const stackNav = navigation.getParent<NativeStackNavigationProp<UserStackParamList>>();
@@ -92,13 +91,6 @@ export const UserProfileScreen = () => {
               {currentVenueName
                 ? `${ru.profileUser.venuePrefix}${currentVenueName}`
                 : ru.profileUser.joinVenue}
-            </Text>
-            <ChevronRight size={18} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
-          </Pressable>
-          <View style={[styles.rowDivider, { backgroundColor: tokens.colors.border }]} />
-          <Pressable style={styles.settingRow} onPress={() => stackNav?.navigate("UserSetupPin")}>
-            <Text style={[styles.settingLabel, { color: tokens.colors.onSurface }]}>
-              {userPin ? ru.profileUser.pinSet : ru.profileUser.setPin}
             </Text>
             <ChevronRight size={18} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
           </Pressable>

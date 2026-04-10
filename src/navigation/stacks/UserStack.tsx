@@ -5,7 +5,6 @@ import { UserTabs } from "../tabs/UserTabs";
 import { UserActiveEmergencyScreen } from "../../screens/user/UserActiveEmergencyScreen";
 import { UserEmergencyDetailsScreen } from "../../screens/user/UserEmergencyDetailsScreen";
 import { BindVenueScreen } from "../../screens/user/BindVenueScreen";
-import { SetupPinScreen } from "../../screens/user/SetupPinScreen";
 import { UserEditDetailsScreen } from "../../screens/user/UserEditDetailsScreen";
 import { UserBillingPlansScreen } from "../../screens/user/UserBillingPlansScreen";
 import { UserBillingAddonsScreen } from "../../screens/user/UserBillingAddonsScreen";
@@ -39,13 +38,9 @@ export const UserStack = () => (
       options={{ headerShown: false }}
     />
     <Stack.Screen
-      name="UserSetupPin"
-      component={SetupPinScreen}
-      options={{ title: ru.nav.setup2fa }}
-    />
-    <Stack.Screen
       name="UserEditDetails"
       component={UserEditDetailsScreen}
+      options={{ title: ru.editDetails.screenTitle }}
     />
     <Stack.Screen
       name="UserBillingPlans"
