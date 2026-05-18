@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, PropsWithChildren } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AlertTriangle } from "lucide-react-native";
 import { ru } from "../../locale/ru";
+import { telemetry } from "../../services/telemetry";
 
 interface State {
   hasError: boolean;
@@ -16,7 +17,10 @@ export class AppErrorBoundary extends Component<PropsWithChildren, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("[ErrorBoundary]", error, info);
+    telemetry.captureException(error, { componentStack: info.componentStack });
+    if (__DEV__) {
+      console.error("[ErrorBoundary]", error, info);
+    }
   }
 
   render() {
@@ -49,7 +53,7 @@ export class AppErrorBoundary extends Component<PropsWithChildren, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "#0A0A0A",
     justifyContent: "center",
     alignItems: "center",
     padding: 32,
@@ -59,7 +63,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: "#FEE2E2",
+    backgroundColor: "#3F1D1D",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
@@ -67,24 +71,24 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#0F172A",
+    color: "#FFFFFF",
     textAlign: "center",
   },
   message: {
     fontSize: 14,
-    color: "#64748B",
+    color: "#A1A1AA",
     textAlign: "center",
     lineHeight: 22,
   },
   button: {
     marginTop: 12,
-    backgroundColor: "#2563EB",
+    backgroundColor: "#C4F82A",
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 32,
   },
   buttonText: {
-    color: "#FFFFFF",
+    color: "#0A0A0A",
     fontWeight: "700",
     fontSize: 15,
   },

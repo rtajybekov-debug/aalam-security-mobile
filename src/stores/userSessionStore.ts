@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const VENUE_ID_KEY = "alarm_sos_current_venue_id";
-const VENUE_NAME_KEY = "alarm_sos_current_venue_name";
-const INDIVIDUAL_SUBSCRIPTION_KEY = "alarm_sos_individual_subscription_active";
+const VENUE_ID_KEY = "sos_security_current_venue_id";
+const VENUE_NAME_KEY = "sos_security_current_venue_name";
+const INDIVIDUAL_SUBSCRIPTION_KEY = "sos_security_individual_subscription_active";
 
 interface UserSessionState {
   currentVenueId: string | null;

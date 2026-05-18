@@ -31,7 +31,10 @@ const schema = z
     name: z.string().min(1, ru.validation.nameRequired),
     email: z.string().email(ru.validation.emailInvalid),
     phone: kyrgyzPhoneRequiredSchema,
-    password: z.string().min(6, ru.validation.passwordMin),
+    password: z
+      .string()
+      .min(12, ru.validation.passwordMin)
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, ru.validation.passwordComplexity),
     confirmPassword: z.string().min(1, ru.validation.confirmPassword),
   })
   .refine((d) => d.password === d.confirmPassword, {

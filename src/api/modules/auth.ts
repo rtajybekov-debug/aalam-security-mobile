@@ -33,4 +33,10 @@ export const authApi = {
     });
     return data;
   },
+  async startTelegramVerification() {
+    const { data } = await apiClient.post<{ token: string; deepLink: string }>(
+      "/auth/telegram/verify/start",
+    );
+    return data;
+  },
 };

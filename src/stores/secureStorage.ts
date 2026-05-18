@@ -2,8 +2,8 @@ import * as SecureStore from "expo-secure-store";
 import { AuthTokens } from "../types/auth";
 import { UserProfile } from "../types/user";
 
-const TOKENS_KEY = "alarm_sos_tokens";
-const USER_KEY = "alarm_sos_user";
+const TOKENS_KEY = "sos_security_tokens";
+const USER_KEY = "sos_security_user";
 
 export const secureStorage = {
   async saveTokens(tokens: AuthTokens) {

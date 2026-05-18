@@ -23,56 +23,6 @@ export const palette = {
   violet500: "#8B5CF6",
 } as const;
 
-/** Light concept: off-white bg, orange accent, soft shadows */
-export const conceptLightPalette = {
-  background: "#F5F5FA",
-  surface: "#FFFFFF",
-  surfaceVariant: "#F1F1F6",
-  accent: "#FF9F43",
-  accentDark: "#FF7B54",
-  danger: "#FF5C5C",
-  onSurface: "#1E293B",
-  onSurfaceMuted: "#64748B",
-  border: "#E2E8F0",
-} as const;
-
-export const semanticLightColors = {
-  primary: conceptLightPalette.accent,
-  onPrimary: palette.white,
-  secondary: conceptLightPalette.surfaceVariant,
-  onSecondary: conceptLightPalette.onSurface,
-  danger: conceptLightPalette.danger,
-  onDanger: palette.white,
-  background: conceptLightPalette.background,
-  surface: conceptLightPalette.surface,
-  surfaceVariant: conceptLightPalette.surfaceVariant,
-  onSurface: conceptLightPalette.onSurface,
-  onSurfaceMuted: conceptLightPalette.onSurfaceMuted,
-  border: conceptLightPalette.border,
-  success: palette.emerald500,
-  warning: conceptLightPalette.accent,
-} as const;
-
-/** SOS gradient for light mode: orange to red */
-export const lightDangerGradient = ["#FF7B54", "#FF5C5C"] as const;
-
-export const semanticDarkColors = {
-  primary: palette.blue500,
-  onPrimary: palette.white,
-  secondary: "#334155",
-  onSecondary: palette.slate50,
-  danger: "#F87171",
-  onDanger: "#450A0A",
-  background: palette.slate900,
-  surface: "#1E293B",
-  surfaceVariant: "#334155",
-  onSurface: palette.slate50,
-  onSurfaceMuted: palette.slate400,
-  border: "#475569",
-  success: "#34D399",
-  warning: "#FBBF24",
-} as const;
-
 /** Concept style guide palette — neon lime accent on OLED black */
 export const conceptPalette = {
   accent: "#C8F53A",
@@ -84,7 +34,7 @@ export const conceptPalette = {
   background: "#0A0A0A",
 } as const;
 
-/** OLED Dark Mode — neon lime on true black */
+/** OLED Dark Mode — neon lime on true black. App is locked to this theme. */
 export const semanticOledDarkColors = {
   primary: conceptPalette.accent,
   onPrimary: "#000000",

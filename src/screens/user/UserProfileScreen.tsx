@@ -10,6 +10,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { useUserSessionStore } from "../../stores/userSessionStore";
 import { AppCard } from "../../components/ui/AppCard";
 import { Avatar } from "../../components/ui/Avatar";
+import { PhoneVerificationCard } from "../../components/profile/PhoneVerificationCard";
 import { useUserTabBarBottomInset } from "../../navigation/userTabBarLayout";
 import { UserTabParamList, UserStackParamList } from "../../navigation/types";
 import { useAppTheme } from "../../theme";
@@ -81,6 +82,8 @@ export const UserProfileScreen = () => {
             <Text style={[styles.editText, { color: tokens.colors.primary }]}>{ru.profileUser.edit}</Text>
           </Pressable>
         </AppCard>
+
+        <PhoneVerificationCard />
 
         <Text style={[styles.sectionTitle, { color: tokens.colors.onSurface }]}>
           {ru.profileUser.securitySettings}

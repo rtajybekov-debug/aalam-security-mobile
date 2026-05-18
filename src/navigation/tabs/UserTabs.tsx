@@ -18,9 +18,7 @@ import {
 import { UserHomeScreen } from "../../screens/user/UserHomeScreen";
 import { UserEmergencyHistoryScreen } from "../../screens/user/UserEmergencyHistoryScreen";
 import { UserProfileScreen } from "../../screens/user/UserProfileScreen";
-import { useAppTheme } from "../../theme";
 import { fonts } from "../../theme/fonts";
-import { conceptLightPalette } from "../../theme/colors";
 import { ru } from "../../locale/ru";
 
 const Tab = createBottomTabNavigator<UserTabParamList>();
@@ -32,22 +30,13 @@ const TAB_ICONS = {
   Profile: User,
 } as const;
 
-const DARK = {
+const TAB_COLORS = {
   grad0: "#0A0A0A00",
   grad1: "#0A0A0A",
   pillBg: "#18181B",
   pillBorder: "#27272A",
   active: "#C4F82A",
   inactive: "#52525B",
-} as const;
-
-const LIGHT = {
-  grad0: "#F5F5FA00",
-  grad1: "#F5F5FA",
-  pillBg: "#FFFFFF",
-  pillBorder: "#E2E8F0",
-  active: conceptLightPalette.accent,
-  inactive: "#64748B",
 } as const;
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -108,10 +97,9 @@ function TabItem({
 }
 
 export const UserTabs = () => {
-  const { tokens, isDark } = useAppTheme();
   const insets = useSafeAreaInsets();
-  const C = isDark ? DARK : LIGHT;
-  const activeColor = isDark ? DARK.active : tokens.colors.primary;
+  const C = TAB_COLORS;
+  const activeColor = TAB_COLORS.active;
 
   return (
     <Tab.Navigator

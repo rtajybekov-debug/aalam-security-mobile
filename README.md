@@ -1,6 +1,6 @@
-# Alarm SOS Mobile
+# SOS Security Mobile
 
-Expo React Native TypeScript client scaffold for Alarm SOS.
+Expo React Native TypeScript client scaffold for SOS Security.
 
 ## Prerequisites
 

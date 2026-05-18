@@ -1,6 +1,6 @@
 import "react-native-reanimated";
 import React from "react";
-import { useColorScheme, View } from "react-native";
+import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 import {
@@ -19,10 +19,17 @@ import { useEmergencyLocationSender } from "./hooks/useEmergencyLocationSender";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 import { usePushNotifications } from "./hooks/usePushNotifications";
 import { AppErrorBoundary } from "./components/error/AppErrorBoundary";
+import { OfflineBanner } from "./components/ui/OfflineBanner";
+import { BackgroundLocationPrompt } from "./components/sos/BackgroundLocationPrompt";
+import { telemetry } from "./services/telemetry";
+// Side-effect import: registers the TaskManager task for background SOS location updates.
+import "./services/locationTrackingService";
+
+// Initialize Sentry before any React tree mounts so render-phase errors are captured.
+telemetry.init();
 
 
 const AppInner = () => {
-  const colorScheme = useColorScheme();
   const [fontsLoaded] = useFonts({
     SpaceGrotesk_700Bold,
     Manrope_500Medium,
@@ -43,8 +50,10 @@ const AppInner = () => {
 
   return (
     <>
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+      <StatusBar style="light" />
       <RootNavigator />
+      <OfflineBanner />
+      <BackgroundLocationPrompt />
     </>
   );
 };
@@ -59,4 +68,4 @@ const App = () => (
   </AppErrorBoundary>
 );
 
-export default App;
+export default telemetry.wrap(App);

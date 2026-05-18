@@ -22,7 +22,10 @@ import { ru } from "../../locale/ru";
 
 const schema = z
   .object({
-    newPassword: z.string().min(6, ru.validation.passwordMin),
+    newPassword: z
+      .string()
+      .min(12, ru.validation.passwordMin)
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, ru.validation.passwordComplexity),
     confirmPassword: z.string(),
   })
   .refine((d) => d.newPassword === d.confirmPassword, {

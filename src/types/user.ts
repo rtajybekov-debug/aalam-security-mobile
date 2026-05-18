@@ -6,6 +6,9 @@ export interface UserProfile {
   role: Role;
   displayName?: string | null;
   phone?: string | null;
+  phoneVerifiedAt?: string | null;
+  telegramId?: string | null;
+  telegramUsername?: string | null;
   individualSubscriptionActive?: boolean;
   subscriptionExpiresAt?: string | null;
   planId?: string | null;

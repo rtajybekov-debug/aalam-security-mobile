@@ -1,5 +1,5 @@
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { DarkTheme, NavigationContainer, type Theme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuthStore } from "../stores/authStore";
 import { RootStackParamList, roleToRootScreen } from "./types";
@@ -11,8 +11,25 @@ import { AdminStack } from "./stacks/AdminStack";
 import { AuthGuard } from "./guards/AuthGuard";
 import { SplashScreen } from "../screens/common/SplashScreen";
 import { AuthLoadingScreen } from "../screens/common/AuthLoadingScreen";
+import { oledDarkTokens } from "../theme/tokens";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+// Lock navigation chrome to OLED dark; without this React Navigation falls back to
+// its default light theme on Android when the system is in light mode, which causes
+// white flashes between screens and light card backgrounds.
+const navigationTheme: Theme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: oledDarkTokens.colors.background,
+    card: oledDarkTokens.colors.surface,
+    text: oledDarkTokens.colors.onSurface,
+    border: oledDarkTokens.colors.border,
+    primary: oledDarkTokens.colors.primary,
+    notification: oledDarkTokens.colors.danger,
+  },
+};
 
 export const RootNavigator = () => {
   const isBootstrapped = useAuthStore((state) => state.isBootstrapped);
@@ -23,7 +40,7 @@ export const RootNavigator = () => {
     isBootstrapped && isAuthenticated && user ? roleToRootScreen[user.role] : "Splash";
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       <Stack.Navigator
         key={isAuthenticated ? `auth-${user?.role ?? "none"}` : "guest"}
         initialRouteName={initialRouteName}

@@ -22,6 +22,7 @@ interface AuthState {
   logout: () => Promise<void>;
   setTokens: (tokens: AuthTokens | null) => void;
   setUser: (user: UserProfile) => void;
+  refreshMe: () => Promise<UserProfile | null>;
 }
 
 const toTokenState = (tokens: AuthTokens | null) => ({
@@ -164,5 +165,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setUser: (user: UserProfile) => {
     void secureStorage.saveUser(user);
     set({ user, role: user.role });
+  },
+  refreshMe: async () => {
+    if (!get().accessToken) return null;
+    try {
+      const me = await usersApi.me();
+      await secureStorage.saveUser(me);
+      set({ user: me, role: me.role });
+      return me;
+    } catch {
+      return null;
+    }
   },
 }));

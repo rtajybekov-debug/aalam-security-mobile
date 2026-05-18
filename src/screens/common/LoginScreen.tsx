@@ -44,8 +44,16 @@ export const LoginScreen = ({ navigation }: Props) => {
     try {
       await login(values.email, values.password);
       toastBus.show({ message: ru.auth.signedInOk, severity: "success" });
-    } catch {
-      toastBus.show({ message: ru.auth.invalidCredentials, severity: "error" });
+    } catch (err: unknown) {
+      // Backend (SEC-6) throttles login to 5 attempts / 15 min per (IP, email).
+      // Show a distinct message so the user knows to wait, not retry frantically.
+      const status =
+        err && typeof err === "object" && "response" in err
+          ? ((err as { response?: { status?: number } }).response?.status ?? 0)
+          : 0;
+      const message =
+        status === 429 ? ru.auth.tooManyAttempts : ru.auth.invalidCredentials;
+      toastBus.show({ message, severity: "error" });
     }
   };
 

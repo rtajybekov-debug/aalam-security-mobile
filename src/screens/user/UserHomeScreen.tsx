@@ -69,6 +69,8 @@ export const UserHomeScreen = ({ navigation }: Props) => {
   const userId = useAuthStore((state) => state.user?.id);
   const activeSession = useEmergencyStore((state) => state.activeSession);
   const setActiveSession = useEmergencyStore((state) => state.setActiveSession);
+  const acquireSosStartLock = useEmergencyStore((state) => state.acquireSosStartLock);
+  const releaseSosStartLock = useEmergencyStore((state) => state.releaseSosStartLock);
   const loadOrganizations = Boolean(isBootstrapped && isAuthenticated && userId);
   const {
     data: memberships = [],
@@ -170,6 +172,15 @@ export const UserHomeScreen = ({ navigation }: Props) => {
       });
       return;
     }
+    // Atomic guard against duplicate /emergency/start requests from
+    // rapid taps, racing presses on different controls, or React state lag.
+    if (!acquireSosStartLock()) {
+      toastBus.show({
+        message: ru.userHome.sosAlreadyInFlight,
+        severity: "warning",
+      });
+      return;
+    }
     setButtonState("sending");
     try {
       let startOpts: { venueId?: string } | undefined;
@@ -199,20 +210,17 @@ export const UserHomeScreen = ({ navigation }: Props) => {
       navigation.navigate("UserActiveEmergency");
     } catch (err: unknown) {
       setButtonState("idle");
+      // Backend (REL-2) returns 409 when a concurrent SOS is in flight — show a
+      // clean Russian message instead of the raw server payload.
+      const status =
+        err && typeof err === "object" && "response" in err
+          ? ((err as { response?: { status?: number } }).response?.status ?? 0)
+          : 0;
       const message =
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "message" in err.response.data &&
-        typeof (err.response.data as { message: unknown }).message === "string"
-          ? (err.response.data as { message: string }).message
-          : ru.userHome.sosFail;
+        status === 409 ? ru.userHome.sosAlreadyInFlight : ru.userHome.sosFail;
       toastBus.show({ message, severity: "error" });
+    } finally {
+      releaseSosStartLock();
     }
   };
 

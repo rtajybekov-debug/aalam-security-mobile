@@ -52,7 +52,9 @@ export const ru = {
 
   validation: {
     emailInvalid: "Некорректный email",
-    passwordMin: "Минимум 6 символов",
+    passwordMin: "Минимум 12 символов",
+    passwordComplexity:
+      "Пароль должен содержать строчную, заглавную букву и цифру",
     nameRequired: "Укажите имя",
     venueLocationRequired: "Укажите место на карте",
     confirmPassword: "Повторите пароль",
@@ -72,8 +74,9 @@ export const ru = {
     privacy: "Конфиденциальность",
     signedInOk: "Вход выполнен",
     invalidCredentials: "Неверный email или пароль",
+    tooManyAttempts: "Слишком много попыток. Попробуйте через 15 минут",
     createAccount: "Регистрация",
-    joinSubtitle: "Alarm SOS",
+    joinSubtitle: "SOS Security",
     fullName: "Имя",
     phone: "Телефон *",
     confirmPasswordLabel: "Пароль ещё раз",
@@ -165,6 +168,7 @@ export const ru = {
     toastNeedAccess: "Нужен тариф или точка организации для SOS.",
     sosSent: "Сигнал отправлен",
     sosFail: "Не удалось отправить SOS",
+    sosAlreadyInFlight: "Запрос уже обрабатывается. Откройте активную тревогу",
     sosModeGps: "Текущее местоположение (GPS)",
     sosModeVenue: "Объект (точка)",
     ownerVenuesHint: "Выберите объект, с которого требуется помощь.",
@@ -300,6 +304,19 @@ export const ru = {
     privacy: "Политика конфиденциальности",
     logout: "Выйти",
     edit: "Правка",
+  },
+
+  phoneVerification: {
+    sectionTitle: "Телефон",
+    phoneMissing: "Номер не указан. Добавьте его в правке профиля.",
+    statusVerified: "Подтверждён",
+    statusPending: "Не подтверждён",
+    verifyButton: "Подтвердить через Telegram",
+    verifyingButton: "Ожидаем подтверждения…",
+    openingTelegram: "Открываем Telegram…",
+    successToast: "Номер телефона подтверждён",
+    timeoutToast: "Подтверждение не получено. Попробуйте ещё раз.",
+    errorToast: "Не удалось начать подтверждение",
   },
 
   profileCommon: {
@@ -587,6 +604,7 @@ export const ru = {
     resolveFail: "Не закрылась",
     updated: "Обновлено",
     updateFail: "Сбой обновления",
+    sessionConflict: "Состояние тревоги изменилось. Обновите список",
     queueUpdated: "Очередь обновлена",
   },
 
@@ -672,5 +690,19 @@ export const ru = {
     errorFallback: "Сбой. Перезапустите приложение.",
     tryAgain: "Снова",
     tryAgainA11y: "Закрыть ошибку и продолжить",
+  },
+
+  offline: {
+    offline: "Нет связи с сервером",
+    offlineWithQueue: "Нет связи · в очереди {count}",
+    flushing: "Отправляем {count} сохранённых точек…",
+  },
+
+  backgroundLocation: {
+    title: "Разрешите фоновое отслеживание",
+    body: "Чтобы координаты доходили до спасателей, когда экран заблокирован или приложение свёрнуто, разрешите доступ к местоположению «Всегда». Без этого помощь может не успеть.",
+    allow: "Разрешить",
+    later: "Не сейчас",
+    openSettings: "Открыть настройки",
   },
 } as const;

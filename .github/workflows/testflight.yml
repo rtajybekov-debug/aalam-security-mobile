@@ -1,0 +1,64 @@
+name: Build & submit to TestFlight
+
+# Triggered on `v*` tags (release flow) AND manually from the Actions tab
+# when you need an ad-hoc build.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+          - preview
+      submit:
+        description: "Auto-submit to TestFlight"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+jobs:
+  build:
+    name: Build iOS + submit to TestFlight
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (and optionally submit)
+        env:
+          # Fall back to production+submit on tag pushes (no `inputs`).
+          PROFILE: ${{ inputs.profile || 'production' }}
+          SUBMIT: ${{ inputs.submit || 'true' }}
+        run: |
+          AUTO_SUBMIT=""
+          if [ "$SUBMIT" = "true" ]; then
+            AUTO_SUBMIT="--auto-submit"
+          fi
+          eas build \
+            --platform ios \
+            --profile "$PROFILE" \
+            --non-interactive \
+            --no-wait=false \
+            $AUTO_SUBMIT

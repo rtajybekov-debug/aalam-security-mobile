@@ -28,7 +28,7 @@ const C = {
   heroStroke: "#84CC16",
 } as const;
 
-const ONBOARDING_KEY = "alarm_sos_onboarding_complete_v1";
+const ONBOARDING_KEY = "sos_security_onboarding_complete_v1";
 const { width: SCREEN_W } = Dimensions.get("window");
 
 export const SplashScreen = ({ navigation }: Props) => {
@@ -107,7 +107,7 @@ export const SplashScreen = ({ navigation }: Props) => {
               </LinearGradient>
             </View>
 
-            <Text style={styles.appName}>Alarm SOS</Text>
+            <Text style={styles.appName}>SOS Security</Text>
             <Text style={styles.desc}>{ru.splash.tagline}</Text>
 
             <View style={styles.flexSpacer} />

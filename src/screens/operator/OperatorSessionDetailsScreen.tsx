@@ -41,8 +41,18 @@ export const OperatorSessionDetailsScreen = ({ route, navigation }: Props) => {
       setIsMutating(true);
       await handler();
       toastBus.show({ message: ru.operator.updated, severity: "success" });
-    } catch {
-      toastBus.show({ message: ru.operator.updateFail, severity: "error" });
+    } catch (err: unknown) {
+      // Backend (REL-1) returns 409 on concurrent status transitions
+      // (another operator already took the session, or it was closed).
+      const status =
+        err && typeof err === "object" && "response" in err
+          ? ((err as { response?: { status?: number } }).response?.status ?? 0)
+          : 0;
+      const message =
+        status === 409
+          ? ru.operator.sessionConflict
+          : ru.operator.updateFail;
+      toastBus.show({ message, severity: "error" });
     } finally {
       setIsMutating(false);
     }

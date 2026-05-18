@@ -24,7 +24,8 @@ export const socketService = {
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
-      reconnectionDelayMax: 10000,
+      // 30s cap is friendlier on battery and infra than 10s under sustained outages.
+      reconnectionDelayMax: 30000,
     });
     currentToken = token;
     return socket;

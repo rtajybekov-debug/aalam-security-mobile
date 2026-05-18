@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from "react";
-import { Pressable, StyleSheet, View, ViewStyle } from "react-native";
+import { Pressable, View, ViewStyle } from "react-native";
 import { useAppTheme } from "../../theme";
 import { radius, spacing } from "../../theme";
 
@@ -8,14 +8,11 @@ interface Props extends PropsWithChildren {
   compact?: boolean;
   /** Left accent border color (e.g. status color) */
   accent?: string;
-  /** Flat: no shadow. Default: true in dark mode, false in light (soft shadow) */
-  flat?: boolean;
   style?: ViewStyle;
 }
 
-export const AppCard = ({ children, onPress, compact = false, accent, flat, style }: Props) => {
-  const { tokens, isDark } = useAppTheme();
-  const useFlat = flat ?? isDark; // light mode: soft shadow by default
+export const AppCard = ({ children, onPress, compact = false, accent, style }: Props) => {
+  const { tokens } = useAppTheme();
 
   const containerStyle: ViewStyle = {
     backgroundColor: tokens.colors.surface,
@@ -23,18 +20,9 @@ export const AppCard = ({ children, onPress, compact = false, accent, flat, styl
     borderRadius: radius.lg,
     borderWidth: 1,
     padding: compact ? spacing.md : spacing.lg,
-    ...(useFlat && {
-      shadowOpacity: 0,
-      shadowRadius: 0,
-      elevation: 0,
-    }),
-    ...(!useFlat && {
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.06,
-      shadowRadius: 8,
-      elevation: 2,
-    }),
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
     ...(accent && {
       borderLeftWidth: 4,
       borderLeftColor: accent,

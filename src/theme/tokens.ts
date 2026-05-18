@@ -1,26 +1,15 @@
 import {
-  semanticLightColors,
   semanticOledDarkColors,
-  lightDangerGradient,
   oledDangerGradient,
   oledActiveGradient,
 } from "./colors";
 import { elevation } from "./elevation";
 import { radius } from "./radius";
 import { spacing } from "./spacing";
-import { statusColorsDark, statusColorsLight } from "./statusColors";
+import { statusColorsDark } from "./statusColors";
 import { typography } from "./typography";
 
-/** Emergency category accent colors - theme-aware */
-export const categoryColorsLight = {
-  medical: "#10B981",
-  fire: "#EF4444",
-  natural: "#059669",
-  accident: "#8B5CF6",
-  violence: "#EC4899",
-  rescue: "#F59E0B",
-} as const;
-
+/** Emergency category accent colors (OLED dark theme) */
 export const categoryColorsDark = {
   medical: "#34D399",
   fire: "#F87171",
@@ -46,9 +35,9 @@ export interface ThemeTokens {
     border: string;
     success: string;
     warning: string;
-    /** Emergency category accent colors (theme-aware) */
-    category: Record<keyof typeof categoryColorsLight, string>;
-    /** [start, end] for LinearGradient - OLED theme only */
+    /** Emergency category accent colors */
+    category: Record<keyof typeof categoryColorsDark, string>;
+    /** [start, end] for LinearGradient */
     dangerGradient?: readonly [string, string];
     activeGradient?: readonly [string, string];
   };
@@ -56,25 +45,10 @@ export interface ThemeTokens {
   radius: typeof radius;
   elevation: typeof elevation;
   typography: typeof typography;
-  status: typeof statusColorsLight;
+  status: typeof statusColorsDark;
 }
 
-export const lightTokens: ThemeTokens = {
-  colors: {
-    ...semanticLightColors,
-    category: categoryColorsLight,
-    dangerGradient: lightDangerGradient,
-    /** Active session: amber → red, same family as idle SOS gradient */
-    activeGradient: ["#FBBF24", "#EF4444"] as const,
-  },
-  spacing,
-  radius,
-  elevation,
-  typography,
-  status: statusColorsLight,
-};
-
-/** OLED Dark Mode tokens - true black, premium feel (used when isDark) */
+/** OLED Dark Mode tokens — true black, premium feel. App is locked to this theme. */
 export const oledDarkTokens: ThemeTokens = {
   colors: {
     ...semanticOledDarkColors,
