@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "SOS Security",
-    "slug": "sos-security-mobile",
+    "slug": "alarm-sos-mobile",
     "plugins": [
       [
         "expo-notifications",
@@ -11,7 +11,7 @@
         }
       ]
     ],
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icons/ios-light.png",
