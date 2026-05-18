@@ -19,6 +19,10 @@
     },
     "production": {
       "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.sossecurty.com",
+        "EAS_BUILD_NO_EXPO_GO_WARNING": "true"
+      },
       "ios": {
         "resourceClass": "m-medium"
       },
@@ -30,8 +34,8 @@
   "submit": {
     "production": {
       "ios": {
-        "ascAppId": "REPLACE_WITH_ASC_APP_ID",
-        "appleTeamId": "REPLACE_WITH_APPLE_TEAM_ID"
+        "ascAppId": "6765866174",
+        "appleTeamId": "R87UR3QYRM"
       }
     }
   }

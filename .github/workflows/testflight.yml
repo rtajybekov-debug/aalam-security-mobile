@@ -48,7 +48,8 @@ jobs:
 
       - name: Build (and optionally submit)
         env:
-          # Fall back to production+submit on tag pushes (no `inputs`).
+          # Tag pushes default to production + auto-submit. Override via
+          # workflow_dispatch when you want a build without submitting.
           PROFILE: ${{ inputs.profile || 'production' }}
           SUBMIT: ${{ inputs.submit || 'true' }}
         run: |
