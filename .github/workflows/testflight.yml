@@ -60,5 +60,4 @@ jobs:
             --platform ios \
             --profile "$PROFILE" \
             --non-interactive \
-            --no-wait=false \
             $AUTO_SUBMIT
