@@ -11,7 +11,7 @@
         }
       ]
     ],
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icons/ios-light.png",
@@ -126,7 +126,9 @@
     "extra": {
       "eas": {
         "projectId": "3552c61b-08a5-498c-aa11-ea50edfebaae"
-      }
+      },
+      "apiBaseUrl": "https://api.sossecurty.com",
+      "wsUrl": "wss://api.sossecurty.com"
     },
     "owner": "erkinchik"
   }
