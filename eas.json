@@ -19,10 +19,7 @@
     },
     "production": {
       "autoIncrement": true,
-      "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://api.sossecurty.com",
-        "EAS_BUILD_NO_EXPO_GO_WARNING": "true"
-      },
+      "environment": "production",
       "ios": {
         "resourceClass": "m-medium"
       },
