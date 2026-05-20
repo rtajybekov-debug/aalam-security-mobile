@@ -8,6 +8,7 @@ import { BindVenueScreen } from "../../screens/user/BindVenueScreen";
 import { UserEditDetailsScreen } from "../../screens/user/UserEditDetailsScreen";
 import { UserBillingPlansScreen } from "../../screens/user/UserBillingPlansScreen";
 import { UserBillingAddonsScreen } from "../../screens/user/UserBillingAddonsScreen";
+import { UserSubscriptionRequestScreen } from "../../screens/user/UserSubscriptionRequestScreen";
 import { UserOrganizationScreen } from "../../screens/user/UserOrganizationScreen";
 import { appStackScreenOptions } from "../ui/AppStackShell";
 import { ru } from "../../locale/ru";
@@ -51,6 +52,11 @@ export const UserStack = () => (
       name="UserBillingAddons"
       component={UserBillingAddonsScreen}
       options={{ title: ru.nav.billingAddons }}
+    />
+    <Stack.Screen
+      name="UserSubscriptionRequest"
+      component={UserSubscriptionRequestScreen}
+      options={{ title: ru.nav.subscriptionRequest }}
     />
   </Stack.Navigator>
 );

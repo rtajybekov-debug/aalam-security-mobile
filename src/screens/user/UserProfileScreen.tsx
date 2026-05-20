@@ -98,8 +98,8 @@ export const UserProfileScreen = () => {
             <ChevronRight size={18} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
           </Pressable>
           <View style={[styles.rowDivider, { backgroundColor: tokens.colors.border }]} />
-          <Pressable style={styles.settingRow} onPress={() => stackNav?.navigate("UserBillingPlans")}>
-            <Text style={[styles.settingLabel, { color: tokens.colors.onSurface }]}>{ru.profileUser.billing}</Text>
+          <Pressable style={styles.settingRow} onPress={() => stackNav?.navigate("UserSubscriptionRequest")}>
+            <Text style={[styles.settingLabel, { color: tokens.colors.onSurface }]}>{ru.profileUser.subscriptionRequest}</Text>
             <ChevronRight size={18} color={tokens.colors.onSurfaceMuted} strokeWidth={2} />
           </Pressable>
           <View style={[styles.rowDivider, { backgroundColor: tokens.colors.border }]} />

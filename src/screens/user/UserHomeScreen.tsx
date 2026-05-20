@@ -308,11 +308,11 @@ export const UserHomeScreen = ({ navigation }: Props) => {
                 <Text style={styles.secondaryCtaArrow}>→</Text>
               </Pressable>
               <Pressable
-                onPress={() => navigation.navigate("UserBillingPlans")}
+                onPress={() => navigation.navigate("UserSubscriptionRequest")}
                 style={[styles.secondaryCta, { borderColor: P.border }]}
                 accessibilityRole="button"
               >
-                <Text style={styles.secondaryCtaText}>{ru.userHome.choosePlan}</Text>
+                <Text style={styles.secondaryCtaText}>{ru.userHome.requestSubscription}</Text>
                 <Text style={styles.secondaryCtaArrow}>→</Text>
               </Pressable>
             </View>

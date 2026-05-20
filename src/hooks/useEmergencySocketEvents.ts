@@ -6,6 +6,8 @@ import { socketService } from "../services/socketService";
 import { sosSoundService } from "../services/sosSoundService";
 import { useAuthStore } from "../stores/authStore";
 import { EmergencySession } from "../types/emergency";
+import { toastBus } from "../ui/feedback/toastBus";
+import { ru } from "../locale/ru";
 
 export const useEmergencySocketEvents = () => {
   const token = useAuthStore((state) => state.accessToken);
@@ -104,6 +106,36 @@ export const useEmergencySocketEvents = () => {
 
     socket.on("emergency:location_update", onLocationUpdate);
 
+    const onSubscriptionApproved = (_payload: {
+      requestId: string;
+      expiresAt: string | null;
+    }) => {
+      markEvent();
+      if (role === "USER") {
+        void useAuthStore.getState().refreshMe();
+        toastBus.show({
+          message: ru.subscriptionRequest.approvedToast,
+          severity: "success",
+        });
+      }
+    };
+    const onSubscriptionRejected = (payload: {
+      requestId: string;
+      reason: string | null;
+    }) => {
+      markEvent();
+      if (role === "USER") {
+        toastBus.show({
+          message: payload.reason
+            ? `${ru.subscriptionRequest.rejectedToast}: ${payload.reason}`
+            : ru.subscriptionRequest.rejectedToast,
+          severity: "error",
+        });
+      }
+    };
+    socket.on("subscription:approved", onSubscriptionApproved);
+    socket.on("subscription:rejected", onSubscriptionRejected);
+
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
@@ -115,6 +147,8 @@ export const useEmergencySocketEvents = () => {
       socket.off("emergency:closed", onSessionClosed);
       socket.off("emergency:reassigned", onSessionEvent);
       socket.off("emergency:location_update", onLocationUpdate);
+      socket.off("subscription:approved", onSubscriptionApproved);
+      socket.off("subscription:rejected", onSubscriptionRejected);
     };
   }, [
     markEvent,

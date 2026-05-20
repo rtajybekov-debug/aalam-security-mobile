@@ -39,6 +39,7 @@ export type UserStackParamList = {
   UserEditDetails: undefined;
   UserBillingPlans: undefined;
   UserBillingAddons: { planName: string; basePrice: number };
+  UserSubscriptionRequest: undefined;
 };
 
 export type OperatorTabParamList = {
