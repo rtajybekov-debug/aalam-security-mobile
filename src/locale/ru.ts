@@ -307,6 +307,28 @@ export const ru = {
     privacy: "Политика конфиденциальности",
     logout: "Выйти",
     edit: "Правка",
+    deleteAccount: "Удалить аккаунт",
+  },
+
+  deleteAccount: {
+    title: "Удалить аккаунт",
+    warning:
+      "Это действие необратимо. Ваши персональные данные будут удалены, доступ к приложению будет закрыт.",
+    consequencesTitle: "Что произойдёт:",
+    consequence1: "Email, телефон и имя будут стёрты",
+    consequence2: "Текущие сессии будут завершены",
+    consequence3: "История SOS-вызовов сохраняется обезличенно для аудита",
+    confirmHint: "Введите слово УДАЛИТЬ для подтверждения",
+    confirmKeyword: "УДАЛИТЬ",
+    confirmButton: "Удалить аккаунт",
+    cancelButton: "Отмена",
+    deletingButton: "Удаляем…",
+    successToast: "Аккаунт удалён",
+    errorActiveEmergency:
+      "У вас активный SOS-вызов. Дождитесь его завершения и попробуйте снова.",
+    errorForbidden:
+      "Сотрудники и администраторы не могут удалить аккаунт самостоятельно.",
+    errorGeneric: "Не удалось удалить аккаунт",
   },
 
   phoneVerification: {

@@ -27,4 +27,8 @@ export const usersApi = {
     );
     return data;
   },
+  async deleteAccount() {
+    const { data } = await apiClient.delete<{ status: string }>("/users/me");
+    return data;
+  },
 };
