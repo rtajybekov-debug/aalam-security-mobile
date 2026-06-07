@@ -16,6 +16,7 @@ interface AuthState {
   isBootstrapped: boolean;
   isAuthenticated: boolean;
   bootstrap: () => Promise<void>;
+  revalidateSession: (preloadedTokens?: AuthTokens | null) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, phone: string) => Promise<void>;
   refresh: () => Promise<boolean>;
@@ -38,6 +39,22 @@ const isInvalidRefreshError = (error: unknown) => {
   return status === 400 || status === 401 || status === 403;
 };
 
+const NETWORK_TIMEOUT_MS = 8000;
+
+/**
+ * Races a promise against a hard timeout. In the foreground the JS timer always
+ * fires, so this guarantees a session check settles even when the underlying
+ * native request hangs on a stale connection (cold start after long idle) and
+ * the axios timeout isn't honored.
+ */
+const withTimeout = <T>(promise: Promise<T>, ms: number, label: string): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label}-timeout`)), ms),
+    ),
+  ]);
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   accessToken: null,
   refreshToken: null,
@@ -48,47 +65,94 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   bootstrap: async () => {
     const tokens = await secureStorage.getTokens();
 
-    // Try the stored access token first — verify it's still valid via /users/me
-    if (tokens?.accessToken && tokens.refreshToken) {
-      try {
-        const me = await usersApi.me(tokens.accessToken);
-        await secureStorage.saveUser(me);
+    // No stored session at all — go straight to the auth flow.
+    if (!tokens?.refreshToken) {
+      await Promise.all([secureStorage.clearTokens(), secureStorage.clearUser()]);
+      set({ isBootstrapped: true });
+      return;
+    }
+
+    // Offline-first: with a cached profile on disk, let the user in IMMEDIATELY.
+    // Startup must never block on the network — a stale/dead connection after
+    // long inactivity used to wedge /users/me forever and freeze the app on the
+    // loading screen.
+    const cachedUser = await secureStorage.getUser();
+    if (cachedUser) {
+      set({
+        ...toTokenState(tokens),
+        user: cachedUser,
+        role: cachedUser.role,
+        isAuthenticated: true,
+        isBootstrapped: true,
+      });
+      await useUserSessionStore.getState().hydrate();
+      void queryClient.invalidateQueries({ queryKey: ["organizations"] });
+    }
+
+    // Validate / refresh the session in the background. This unblocks startup
+    // when there is no cached profile and otherwise keeps the cached session
+    // fresh. It never freezes the UI (see withTimeout / revalidateSession).
+    void get().revalidateSession(tokens);
+  },
+  revalidateSession: async (preloadedTokens) => {
+    const tokens = preloadedTokens ?? (await secureStorage.getTokens());
+    if (!tokens?.refreshToken) {
+      await Promise.all([secureStorage.clearTokens(), secureStorage.clearUser()]);
+      set({
+        accessToken: null,
+        refreshToken: null,
+        user: null,
+        role: null,
+        isAuthenticated: false,
+        isBootstrapped: true,
+      });
+      return;
+    }
+
+    try {
+      // apiClient transparently refreshes on 401, so a single /users/me call
+      // covers both the valid-token and expired-token cases. The timeout
+      // guarantees this settles even if the native socket is wedged.
+      const me = await withTimeout(
+        usersApi.me(tokens.accessToken || undefined),
+        NETWORK_TIMEOUT_MS,
+        "revalidate",
+      );
+      await secureStorage.saveUser(me);
+      // The 401 interceptor may have rotated the tokens — prefer the live store
+      // values over the ones we loaded so we never revert to a stale token.
+      const current = get();
+      const effectiveTokens =
+        current.accessToken && current.refreshToken
+          ? { accessToken: current.accessToken, refreshToken: current.refreshToken }
+          : tokens;
+      set({
+        ...toTokenState(effectiveTokens),
+        user: me,
+        role: me.role,
+        isAuthenticated: true,
+        isBootstrapped: true,
+      });
+      await useUserSessionStore.getState().hydrate();
+      void queryClient.invalidateQueries({ queryKey: ["organizations"] });
+    } catch (error) {
+      if (isInvalidRefreshError(error)) {
+        // The session is genuinely invalid (refresh rejected) — sign out.
+        await Promise.all([secureStorage.clearTokens(), secureStorage.clearUser()]);
         set({
-          ...toTokenState(tokens),
-          user: me,
-          role: me.role,
-          isAuthenticated: true,
+          accessToken: null,
+          refreshToken: null,
+          user: null,
+          role: null,
+          isAuthenticated: false,
           isBootstrapped: true,
         });
-        await useUserSessionStore.getState().hydrate();
-        void queryClient.invalidateQueries({ queryKey: ["organizations"] });
         return;
-      } catch {
-        // Access token expired or invalid — fall through to refresh
       }
+      // Network error or timeout: keep any cached session intact and just make
+      // sure the app is unblocked. We revalidate again on the next foreground.
+      set({ isBootstrapped: true });
     }
-
-    // Refresh path: exchange refresh token for a new token pair
-    if (tokens?.refreshToken) {
-      try {
-        const refreshed = await authApi.refresh({ refreshToken: tokens.refreshToken });
-        const me = await usersApi.me(refreshed.accessToken);
-        await Promise.all([secureStorage.saveTokens(refreshed), secureStorage.saveUser(me)]);
-        set({
-          ...toTokenState(refreshed),
-          user: me,
-          role: me.role,
-          isAuthenticated: true,
-          isBootstrapped: true,
-        });
-        await useUserSessionStore.getState().hydrate();
-        void queryClient.invalidateQueries({ queryKey: ["organizations"] });
-        return;
-      } catch {}
-    }
-
-    await Promise.all([secureStorage.clearTokens(), secureStorage.clearUser()]);
-    set({ isBootstrapped: true });
   },
   login: async (email: string, password: string) => {
     const tokens = await authApi.login({ email, password });
