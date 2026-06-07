@@ -18,6 +18,7 @@ import {
 import { UserHomeScreen } from "../../screens/user/UserHomeScreen";
 import { UserEmergencyHistoryScreen } from "../../screens/user/UserEmergencyHistoryScreen";
 import { UserProfileScreen } from "../../screens/user/UserProfileScreen";
+import { useSyncCurrentVenue } from "../../hooks/useSyncCurrentVenue";
 import { fonts } from "../../theme/fonts";
 import { ru } from "../../locale/ru";
 
@@ -100,6 +101,11 @@ export const UserTabs = () => {
   const insets = useSafeAreaInsets();
   const C = TAB_COLORS;
   const activeColor = TAB_COLORS.active;
+
+  // Hydrate currentVenueId / currentVenueName from backend membership on
+  // mount and whenever /organization/my changes. Без этого SOS уходил GPS-ом
+  // даже у привязанного к точке менеджера после релогина.
+  useSyncCurrentVenue();
 
   return (
     <Tab.Navigator
