@@ -26,6 +26,7 @@ import {
   setBrightnessAsync,
 } from "../../utils/brightness";
 import { ru } from "../../locale/ru";
+import { SUPPORT_PHONE } from "../../config/contact";
 
 type Props = NativeStackScreenProps<UserStackParamList, "UserActiveEmergency">;
 
@@ -120,7 +121,7 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
   };
 
   const handleCallDispatch = () => {
-    void Linking.openURL("tel:+996777777777");
+    void Linking.openURL(`tel:${SUPPORT_PHONE.e164}`);
   };
 
   const closeSession = useCallback(async () => {

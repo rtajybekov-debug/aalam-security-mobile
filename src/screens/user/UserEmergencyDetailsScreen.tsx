@@ -1,6 +1,6 @@
 import React from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { ScrollView, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { Linking, ScrollView, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { UserStackParamList } from "../../navigation/types";
 import { usePaginatedList } from "../../hooks/usePaginatedList";
 import { emergencyApi } from "../../api/modules/emergency";
@@ -11,6 +11,7 @@ import { Divider } from "../../components/ui/Divider";
 import { useAppTheme } from "../../theme";
 import { spacing } from "../../theme";
 import { ru } from "../../locale/ru";
+import { SUPPORT_PHONE } from "../../config/contact";
 
 type Props = NativeStackScreenProps<UserStackParamList, "UserEmergencyDetails">;
 
@@ -132,7 +133,13 @@ export const UserEmergencyDetailsScreen = ({ route }: Props) => {
             {item.resolution ?? ru.emergencyDetails.defaultResolution}
           </Text>
           <Divider style={styles.divider} />
-          <Text style={[styles.contact, { color: tokens.colors.primary }]}>{ru.emergencyDetails.contact}</Text>
+          <Text
+            style={[styles.contact, { color: tokens.colors.primary }]}
+            onPress={() => void Linking.openURL(`tel:${SUPPORT_PHONE.e164}`)}
+          >
+            {ru.emergencyDetails.contact}
+            {SUPPORT_PHONE.display}
+          </Text>
         </AppCard>
       </ScrollView>
     </SafeAreaView>

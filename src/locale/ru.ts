@@ -508,7 +508,7 @@ export const ru = {
     tlClosed: "• Закрыто — ",
     team: "Группа реагирования",
     defaultResolution: "Оператор завершил инцидент.",
-    contact: "Связь: +1 (555) 010-2281",
+    contact: "Связь: ",
   },
 
   createOrgForm: {
