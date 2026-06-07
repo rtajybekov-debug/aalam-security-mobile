@@ -9,6 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { isAxiosError } from "axios";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -130,8 +131,18 @@ export const UserActiveEmergencyScreen = ({ navigation }: Props) => {
       setActiveSession(null);
       toastBus.show({ message: ru.userActiveEmergency.closedOk, severity: "success" });
       navigation.navigate("UserTabs");
-    } catch {
-      toastBus.show({ message: ru.userActiveEmergency.closeFail, severity: "error" });
+    } catch (error) {
+      // The session may already be closed server-side (operator/admin closed it
+      // and the realtime event was missed). Treat that as a successful close so
+      // the user isn't stuck on a dead session.
+      const status = isAxiosError(error) ? error.response?.status : undefined;
+      if (status === 404 || status === 409) {
+        setActiveSession(null);
+        toastBus.show({ message: ru.userActiveEmergency.closedOk, severity: "success" });
+        navigation.navigate("UserTabs");
+      } else {
+        toastBus.show({ message: ru.userActiveEmergency.closeFail, severity: "error" });
+      }
     } finally {
       setIsClosing(false);
     }

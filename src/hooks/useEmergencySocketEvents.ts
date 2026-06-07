@@ -50,7 +50,17 @@ export const useEmergencySocketEvents = () => {
     const onSessionEvent = (payload: EmergencySession) => {
       markEvent();
       if (role === "USER") {
-        setActiveSession(payload);
+        // A CLOSED status always clears. Otherwise only refresh the session
+        // that is still active locally — never revive one we've already
+        // cleared (e.g. after an operator/admin closed it).
+        if (payload.status === "CLOSED") {
+          setActiveSession(null);
+        } else {
+          const current = useEmergencyStore.getState().activeSession;
+          if (current && current.id === payload.id) {
+            setActiveSession(payload);
+          }
+        }
       }
       if (role === "OPERATOR") {
         if (payload.status !== "CLOSED") {
@@ -94,7 +104,17 @@ export const useEmergencySocketEvents = () => {
     }) => {
       markEvent();
       if (role === "USER") {
-        setActiveSession(payload.session);
+        // Guard against the revive race: the native tracker can emit one last
+        // location update right after the session was closed. Only apply it if
+        // this session is still the active one, and clear on CLOSED.
+        const current = useEmergencyStore.getState().activeSession;
+        if (current && current.id === payload.session.id) {
+          if (payload.session.status === "CLOSED") {
+            setActiveSession(null);
+          } else {
+            setActiveSession(payload.session);
+          }
+        }
       }
       if (role === "OPERATOR") {
         setSelectedSession(payload.session);
