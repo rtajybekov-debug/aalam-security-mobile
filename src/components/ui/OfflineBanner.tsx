@@ -5,17 +5,22 @@ import { useOfflineFlush } from "../../hooks/useOfflineFlush";
 import { ru } from "../../locale/ru";
 
 export const OfflineBanner = () => {
-  const { isOnline, pendingQueueLength } = useOfflineFlush();
+  const { isOnline, isSyncing, pendingQueueLength } = useOfflineFlush();
 
   if (isOnline && pendingQueueLength === 0) {
     return null;
   }
 
-  const message = isOnline
-    ? ru.offline.flushing.replace("{count}", String(pendingQueueLength))
-    : pendingQueueLength > 0
-      ? ru.offline.offlineWithQueue.replace("{count}", String(pendingQueueLength))
-      : ru.offline.offline;
+  const count = String(pendingQueueLength);
+  const message = isSyncing
+    ? ru.offline.flushing.replace("{count}", count)
+    : !isOnline
+      ? pendingQueueLength > 0
+        ? ru.offline.offlineWithQueue.replace("{count}", count)
+        : ru.offline.offline
+      : // Connected per NetInfo, but the queue isn't draining (server
+        // unreachable / between retries) — don't claim we're sending.
+        ru.offline.pendingSync.replace("{count}", count);
 
   return (
     <View pointerEvents="none" style={styles.wrapper}>

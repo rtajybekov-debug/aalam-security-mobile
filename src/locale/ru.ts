@@ -747,6 +747,7 @@ export const ru = {
     offline: "Нет связи с сервером",
     offlineWithQueue: "Нет связи · в очереди {count}",
     flushing: "Отправляем {count} сохранённых точек…",
+    pendingSync: "Ожидаем отправки · в очереди {count}",
   },
 
   backgroundLocation: {

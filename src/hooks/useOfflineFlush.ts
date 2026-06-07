@@ -1,18 +1,29 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useEmergencyStore } from "../stores/emergencyStore";
 import { networkService } from "../services/networkService";
 import { emergencyApi } from "../api/modules/emergency";
 
+/** Periodic retry cadence while a backlog exists but sends keep failing. */
+const RETRY_INTERVAL_MS = 20000;
+
 /**
- * Watches network connectivity and, on reconnect, drains the persisted
- * location queue against the server. Also exposes the current connectivity
- * state so the UI can render an offline banner.
+ * Watches network connectivity and drains the persisted location queue against
+ * the server. Exposes connectivity + sync state so the UI can render an
+ * accurate banner.
+ *
+ * `isOnline` reflects NetInfo connectivity, but that can report "connected"
+ * while the server is actually unreachable. So the banner must distinguish
+ * "actively sending" (`isSyncing`) from "queued, waiting to send" — otherwise
+ * it gets stuck on "Отправляем…" forever when the network drops but NetInfo
+ * still claims a connection. A periodic retry lets the queue self-heal once the
+ * server is reachable again, even if NetInfo never emits a change event.
  *
  * Hydration of AsyncStorage queues runs on first mount; the call is idempotent
  * because the store guards against repeated hydration via isOfflineQueuesHydrated.
  */
 export const useOfflineFlush = () => {
   const [isOnline, setIsOnline] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   const isFlushingRef = useRef(false);
   const isOnlineRef = useRef(true);
 
@@ -26,74 +37,57 @@ export const useOfflineFlush = () => {
     isOnlineRef.current = isOnline;
   }, [isOnline]);
 
-  useEffect(() => {
-    const flush = async () => {
-      if (isFlushingRef.current) return;
-      isFlushingRef.current = true;
-      try {
-        while (true) {
-          if (!isOnlineRef.current) break;
-          const queue = useEmergencyStore.getState().pendingLocationQueue;
-          if (queue.length === 0) break;
-          const point = queue[0];
-          try {
-            await emergencyApi.sendLocation(point.sessionId, {
-              latitude: point.latitude,
-              longitude: point.longitude,
-              accuracy: point.accuracy,
-            });
-            await useEmergencyStore.getState().dequeueLocations(1);
-          } catch {
-            // Stop on first failure — we'll resume on the next reconnect.
-            break;
-          }
+  // Single guarded drain. `isSyncing` is only true while a send is actually
+  // in flight, so the banner never claims "Отправляем…" while idle/stuck.
+  const flush = useCallback(async () => {
+    if (isFlushingRef.current) return;
+    if (!isOnlineRef.current) return;
+    if (useEmergencyStore.getState().pendingLocationQueue.length === 0) return;
+
+    isFlushingRef.current = true;
+    setIsSyncing(true);
+    try {
+      while (isOnlineRef.current) {
+        const queue = useEmergencyStore.getState().pendingLocationQueue;
+        if (queue.length === 0) break;
+        const point = queue[0];
+        try {
+          await emergencyApi.sendLocation(point.sessionId, {
+            latitude: point.latitude,
+            longitude: point.longitude,
+            accuracy: point.accuracy,
+          });
+          await useEmergencyStore.getState().dequeueLocations(1);
+        } catch {
+          // Server unreachable — stop. The retry timer or a reconnect event
+          // will resume the drain later.
+          break;
         }
-      } finally {
-        isFlushingRef.current = false;
       }
-    };
-
-    const unsubscribe = networkService.subscribe((online) => {
-      setIsOnline(online);
-      if (online) {
-        void flush();
-      }
-    });
-
-    return unsubscribe;
+    } finally {
+      isFlushingRef.current = false;
+      setIsSyncing(false);
+    }
   }, []);
 
-  // Re-attempt flush when the queue grows while online (e.g. capture fails then
-  // the next attempt succeeds: we want to keep draining without waiting for a
-  // network event).
+  // Flush on connectivity change (fast path on reconnect).
   useEffect(() => {
-    if (!isOnline || pendingQueueLength === 0 || isFlushingRef.current) return;
-    let cancelled = false;
-    const tick = async () => {
-      if (cancelled) return;
-      if (isFlushingRef.current) return;
-      isFlushingRef.current = true;
-      try {
-        const queue = useEmergencyStore.getState().pendingLocationQueue;
-        if (queue.length === 0) return;
-        const point = queue[0];
-        await emergencyApi.sendLocation(point.sessionId, {
-          latitude: point.latitude,
-          longitude: point.longitude,
-          accuracy: point.accuracy,
-        });
-        await useEmergencyStore.getState().dequeueLocations(1);
-      } catch {
-        // Swallow: NetInfo subscription will retry on next reconnect.
-      } finally {
-        isFlushingRef.current = false;
-      }
-    };
-    void tick();
-    return () => {
-      cancelled = true;
-    };
-  }, [isOnline, pendingQueueLength]);
+    const unsubscribe = networkService.subscribe((online) => {
+      setIsOnline(online);
+      if (online) void flush();
+    });
+    return unsubscribe;
+  }, [flush]);
 
-  return { isOnline, pendingQueueLength };
+  // Periodic retry while a backlog exists. Self-heals when the server comes
+  // back even if NetInfo keeps reporting "connected" the whole time. When truly
+  // offline, `flush` early-returns, so this never churns.
+  useEffect(() => {
+    if (pendingQueueLength === 0) return;
+    void flush();
+    const id = setInterval(() => void flush(), RETRY_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [flush, pendingQueueLength]);
+
+  return { isOnline, isSyncing, pendingQueueLength };
 };
