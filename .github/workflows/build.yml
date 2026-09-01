@@ -1,30 +1,30 @@
-name: Build APK
+name: Expo Android Build
 
 on:
-  workflow_dispatch: # Позволяет запускать сборку вручную
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: set up JDK
-        uses: actions/setup-java@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          java-version: '17' # Укажите 11, 17 или 21 в зависимости от возраста проекта
-          distribution: 'zulu'
+          node-version: 18 # или 20, в зависимости от версии проекта
+          cache: 'npm'
 
-      - name: Generate Gradle Wrapper & Build
-        run: |
-          gradle wrapper
-          chmod +x gradlew
-          ./gradlew assembleDebug
+      - name: Install dependencies
+        run: npm ci # или npm install, если нет package-lock.json
 
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Setup Expo / EAS
+        uses: expo/expo-github-action@v8
         with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/*.apk
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Run EAS Build
+        run: npm run eas:build:android:preview
