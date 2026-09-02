@@ -12,12 +12,12 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4 # Использование стабильного релиза v4
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24 # Явное указание Node.js 24 для соответствия стандартам GitHub
+          node-version: 24
           cache: ${{ hashFiles('yarn.lock') != '' && 'yarn' || 'npm' }}
 
       - name: Setup EAS CLI
@@ -35,4 +35,7 @@ jobs:
           fi
 
       - name: Build APK on Expo EAS
+        # Мы принудительно передаем корректный ID напрямую в систему сборщика
+        env:
+          EAS_PROJECT_ID: JKnev3gxHsBZ8tjXgcI5miJYDPZAdW0wrmRxeg9R
         run: eas build --platform android --profile preview --non-interactive
