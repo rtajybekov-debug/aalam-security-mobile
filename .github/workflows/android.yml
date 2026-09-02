@@ -34,8 +34,13 @@ jobs:
             npm ci --legacy-peer-deps
           fi
 
+      - name: Inject Valid Project ID
+        # Скрипт устанавливает утилиту jq, вырезает старый блок extra и вставляет гарантированно рабочий UUID
+        run: |
+          sudo apt-get install jq -y
+          jq '.expo.extra.eas.projectId = "JKnev3gxHsBZ8tjXgcI5miJYDPZAdW0wrmRxeg9R"' app.json > temp.json && mv temp.json app.json
+          echo "=== Проверка app.json ==="
+          cat app.json | grep projectId
+
       - name: Build APK on Expo EAS
-        # Мы принудительно передаем корректный ID напрямую в систему сборщика
-        env:
-          EAS_PROJECT_ID: JKnev3gxHsBZ8tjXgcI5miJYDPZAdW0wrmRxeg9R
         run: eas build --platform android --profile preview --non-interactive
