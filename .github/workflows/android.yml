@@ -12,12 +12,12 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Использование стабильного релиза v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24 # Обновлено до актуальной версии Node.js
+          node-version: 24 # Явное указание Node.js 24 для соответствия стандартам GitHub
           cache: ${{ hashFiles('yarn.lock') != '' && 'yarn' || 'npm' }}
 
       - name: Setup EAS CLI
