@@ -17,8 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          # Скрипт сам поймет, использовать npm или yarn, на основе ваших lock-файлов
+          node-version: 24 # Обновлено до актуальной версии Node.js
           cache: ${{ hashFiles('yarn.lock') != '' && 'yarn' || 'npm' }}
 
       - name: Setup EAS CLI
