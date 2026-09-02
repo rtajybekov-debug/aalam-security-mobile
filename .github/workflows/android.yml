@@ -18,17 +18,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          # Скрипт сам поймет, использовать npm или yarn, на основе ваших lock-файлов
+          cache: ${{ hashFiles('yarn.lock') != '' && 'yarn' || 'npm' }}
 
       - name: Setup EAS CLI
-        uses: expo/expo-github-action@v8
+        uses: expo/expo-github-action@main
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-          eas-cache: false
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          if [ -f "yarn.lock" ]; then
+            yarn install --frozen-lockfile
+          else
+            npm ci --legacy-peer-deps
+          fi
 
       - name: Build APK on Expo EAS
         run: eas build --platform android --profile preview --non-interactive
