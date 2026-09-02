@@ -1,56 +1,33 @@
-name: Android Build
+name: Build Android APK (EAS)
 
 on:
-  workflow_dispatch: # Позволяет запускать сборку вручную кнопкой в Actions
+  push:
+    branches:
+      - main # Скрипт сработает при пуше в ветку main (замените на master, если нужно)
 
 jobs:
   build:
+    name: Install and Build APK
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Setup Java JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'zulu'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-size: 20
           cache: 'npm'
 
+      - name: Setup EAS CLI
+        uses: expo/openapi-action@v1
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
       - name: Install dependencies
-        run: npm ci || npm install --legacy-peer-deps
+        run: npm install # или yarn install, если вы используете yarn
 
-      - name: Setup EAS CLI Global
-        run: npm install -g eas-cli
-
-      - name: Run EAS Build Locally (No Login)
-        env:
-          EAS_NO_OTP: "1"
-          CI: "1"
-          # Заставляем EAS думать, что проект полностью локальный
-          EXPO_OFFLINE: "1" 
-        # Добавляем флаги автономности напрямую к вызову утилиты
-        run: npx eas-cli build --platform android --profile preview --local --non-interactive
-
-      - name: Find and Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: preview-test-apk
-          # Ищем любой сгенерированный APK в корне или в папке сборки
-          path: |
-            ./*.apk
-            ./build/*.apk
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-preview-apk
-          path: ./*.apk # EAS local обычно кладет файл в корень проекта
+      - name: Build APK on Expo EAS
+        run: eas build --platform android --profile preview --non-interactive
