@@ -3,7 +3,7 @@ name: Build Android APK (EAS)
 on:
   push:
     branches:
-      - main # Скрипт сработает при пуше в ветку main (замените на master, если нужно)
+      - main
 
 jobs:
   build:
@@ -17,17 +17,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-size: 20
+          node-version: 20
           cache: 'npm'
 
       - name: Setup EAS CLI
-        uses: expo/openapi-action@v1
+        uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        run: npm install # или yarn install, если вы используете yarn
+        run: npm install
 
       - name: Build APK on Expo EAS
         run: eas build --platform android --profile preview --non-interactive
