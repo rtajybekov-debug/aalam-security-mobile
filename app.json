@@ -125,7 +125,7 @@
     "newArchEnabled": true,
     "extra": {
       "eas": {
-        "projectId": "JKnev3gxHsBZ8tjXgcI5miJYDPZAdW0wrmRxeg9R"
+        "projectId": "804945be-55a5-4ba2-ad36-060eae1ce58f"
       },
       "apiBaseUrl": "https://api.sossecurty.com",
       "wsUrl": "wss://api.sossecurty.com"
