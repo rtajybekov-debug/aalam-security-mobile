@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "SOS Security",
-    "slug": "alarm-sos-mobile",
+    "slug": "sossecurity",
     "plugins": [
       [
         "expo-notifications",
