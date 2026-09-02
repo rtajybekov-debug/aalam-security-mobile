@@ -38,7 +38,7 @@ jobs:
         # Скрипт устанавливает утилиту jq, вырезает старый блок extra и вставляет гарантированно рабочий UUID
         run: |
           sudo apt-get install jq -y
-          jq '.expo.extra.eas.projectId = "JKnev3gxHsBZ8tjXgcI5miJYDPZAdW0wrmRxeg9R"' app.json > temp.json && mv temp.json app.json
+          jq '.expo.extra.eas.projectId = "804945be-55a5-4ba2-ad36-060eae1ce58f"' app.json > temp.json && mv temp.json app.json
           echo "=== Проверка app.json ==="
           cat app.json | grep projectId
 
